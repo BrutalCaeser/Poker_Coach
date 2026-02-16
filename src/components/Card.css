@@ -1,0 +1,223 @@
+/* ============================================================
+   Card Component Styles
+   Face-up: cream background, colored suit, shadow, rounded corners
+   Face-down: dark blue back with subtle pattern
+   Size variants: large (hero), medium (board), small (opponent)
+   ============================================================ */
+
+.card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  user-select: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- Face-up card --- */
+.card--face-up {
+  background: linear-gradient(145deg, #fffef8 0%, #f5f0e4 50%, #ede7d9 100%);
+  border: 1px solid rgba(180, 170, 150, 0.35);
+}
+
+.card__rank {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.card__suit {
+  line-height: 1;
+}
+
+/* Rank + suit layout */
+.card__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+/* Corner pips */
+.card__corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.card__corner--tl {
+  top: 3px;
+  left: 4px;
+}
+
+.card__corner--br {
+  bottom: 3px;
+  right: 4px;
+  transform: rotate(180deg);
+}
+
+.card__corner-rank {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.card__corner-suit {
+  line-height: 1;
+}
+
+/* --- Face-down card --- */
+.card--face-down {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #1a2744,
+      #1a2744 4px,
+      #1e2e52 4px,
+      #1e2e52 8px
+    );
+  border: 1.5px solid #2a3a60;
+  box-shadow: var(--shadow-card), inset 0 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.card--face-down::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: calc(var(--radius-card) - 3px);
+  border: 1px solid rgba(100, 120, 180, 0.15);
+}
+
+/* --- Suit colors --- */
+.card--hearts { --card-color: var(--suit-hearts); }
+.card--diamonds { --card-color: var(--suit-diamonds); }
+.card--clubs { --card-color: var(--suit-clubs); }
+.card--spades { --card-color: var(--suit-spades); }
+
+.card__rank,
+.card__suit,
+.card__corner-rank,
+.card__corner-suit {
+  color: var(--card-color, #333);
+}
+
+/* --- Size variants --- */
+
+/* Large: hero cards */
+.card--lg {
+  width: 72px;
+  height: 100px;
+}
+
+.card--lg .card__content {
+  gap: 2px;
+}
+
+.card--lg .card__rank {
+  font-size: 1.75rem;
+}
+
+.card--lg .card__suit {
+  font-size: 1.5rem;
+}
+
+.card--lg .card__corner-rank {
+  font-size: 0.65rem;
+}
+
+.card--lg .card__corner-suit {
+  font-size: 0.55rem;
+}
+
+/* Medium: board cards */
+.card--md {
+  width: 60px;
+  height: 84px;
+}
+
+.card--md .card__rank {
+  font-size: 1.4rem;
+}
+
+.card--md .card__suit {
+  font-size: 1.2rem;
+}
+
+.card--md .card__corner-rank {
+  font-size: 0.55rem;
+}
+
+.card--md .card__corner-suit {
+  font-size: 0.5rem;
+}
+
+/* Small: opponent cards */
+.card--sm {
+  width: 44px;
+  height: 62px;
+}
+
+.card--sm .card__rank {
+  font-size: 1rem;
+}
+
+.card--sm .card__suit {
+  font-size: 0.9rem;
+}
+
+.card--sm .card__corner {
+  display: none;
+}
+
+/* Extra small: mini display */
+.card--xs {
+  width: 32px;
+  height: 44px;
+}
+
+.card--xs .card__rank {
+  font-size: 0.75rem;
+}
+
+.card--xs .card__suit {
+  font-size: 0.65rem;
+}
+
+.card--xs .card__corner {
+  display: none;
+}
+
+/* --- Card dealing animation --- */
+.card--dealing {
+  animation: card-deal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* --- Card group (for displaying a hand) --- */
+.card-group {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.card-group--overlap {
+  gap: 0;
+}
+
+.card-group--overlap .card:not(:first-child) {
+  margin-left: -16px;
+}
+
+.card-group--overlap .card:hover {
+  z-index: 1;
+}
