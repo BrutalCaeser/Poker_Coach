@@ -89,7 +89,7 @@ export default function ScenarioMenu({
       {totalCompleted > 0 && (
         <div className="progress-bar" style={{ maxWidth: 900, margin: '0 auto var(--space-3)' }}>
           <div className="progress-bar__track">
-            <div className="progress-bar__fill" style={{ width: `${progressPct}%` }} />
+            <div className="progress-bar__fill" style={{ transform: `scaleX(${progressPct / 100})` }} />
           </div>
         </div>
       )}

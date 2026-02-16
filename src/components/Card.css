@@ -221,3 +221,44 @@
 .card-group--overlap .card:hover {
   z-index: 1;
 }
+
+/* --- Responsive card scaling --- */
+@media (max-width: 640px) {
+  .card--lg {
+    width: 56px;
+    height: 80px;
+  }
+
+  .card--lg .card__rank {
+    font-size: 1.3rem;
+  }
+
+  .card--lg .card__suit {
+    font-size: 1.1rem;
+  }
+
+  .card--md {
+    width: 44px;
+    height: 62px;
+  }
+
+  .card--md .card__rank {
+    font-size: 1rem;
+  }
+
+  .card-group {
+    gap: var(--space-1);
+  }
+}
+
+@media (max-width: 380px) {
+  .card--lg {
+    width: 48px;
+    height: 68px;
+  }
+
+  .card--sm {
+    width: 30px;
+    height: 42px;
+  }
+}

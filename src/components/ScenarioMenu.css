@@ -248,11 +248,12 @@
   height: 100%;
   background: var(--gold);
   border-radius: 2px;
-  transition: width 0.5s ease-out;
+  transform-origin: left center;
+  transition: transform 0.5s ease-out;
 }
 
 /* --- Responsive --- */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .scenario-menu {
     padding: var(--space-3);
   }

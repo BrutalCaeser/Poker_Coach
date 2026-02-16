@@ -184,6 +184,12 @@
   .decision-btn {
     font-size: var(--text-base);
     padding: var(--space-3) var(--space-6);
-    min-width: 120px;
+    min-width: 100px;
+    min-height: 44px;
+  }
+
+  .decision-prompt__actions {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

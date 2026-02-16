@@ -17,8 +17,8 @@
   /* Text */
   --text-primary: #f0ece4;
   --text-secondary: #c4bfb6;
-  --text-muted: #8a8580;
-  --text-dim: #5a5550;
+  --text-muted: #9a9590;
+  --text-dim: #6a6560;
 
   /* Accent Colors */
   --gold: #c8a03c;
@@ -71,6 +71,15 @@
   --font-body: 'Georgia', 'Charter', 'Palatino Linotype', 'Palatino', serif;
   --font-mono: 'Courier New', 'Courier', 'Consolas', monospace;
   --font-ui: system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+
+  /* Aliases for semantic usage */
+  --font-serif: var(--font-body);
+  --font-sans: var(--font-ui);
+
+  /* Semantic background aliases */
+  --bg-base: var(--bg-primary);
+  --bg-card: var(--bg-surface);
+  --border-subtle: rgba(255, 255, 255, 0.06);
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -131,6 +140,8 @@ body {
   background-color: var(--bg-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  font-feature-settings: 'liga' 1, 'kern' 1;
+  -webkit-font-feature-settings: 'liga' 1, 'kern' 1;
 }
 
 #root {
@@ -194,6 +205,18 @@ button {
 button:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Focus ring for non-button interactive elements (scenario cards etc.) */
+[role="button"]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 /* --- Utility Classes --- */
@@ -220,7 +243,7 @@ button:focus-visible {
 /* --- Felt Texture (for the poker table) --- */
 .felt-bg {
   background:
-    radial-gradient(ellipse at center, var(--bg-felt-light) 0%, var(--bg-felt) 70%),
+    radial-gradient(ellipse at center, #2a6e3f 0%, var(--bg-felt) 70%),
     repeating-linear-gradient(
       45deg,
       transparent,
@@ -306,10 +329,10 @@ button:focus-visible {
   }
 }
 
-/* Pulse (for decision prompt emphasis) */
+/* Pulse (for decision prompt emphasis — uses outline for GPU-friendly animation) */
 @keyframes pulse-subtle {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 160, 60, 0.2); }
-  50% { box-shadow: 0 0 0 8px rgba(200, 160, 60, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 160, 60, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(200, 160, 60, 0); }
 }
 
 /* Verdict check/X animation */
@@ -373,4 +396,29 @@ button:focus-visible {
 ::selection {
   background-color: rgba(200, 160, 60, 0.3);
   color: var(--text-primary);
+}
+
+/* --- Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Mobile base adjustments --- */
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 380px) {
+  html {
+    font-size: 14px;
+  }
 }
