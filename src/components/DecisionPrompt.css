@@ -1,0 +1,189 @@
+/* ============================================================
+   DecisionPrompt Component Styles
+   The critical decision UI: large, weighty, tactile buttons.
+   CALL=green, FOLD=red, RAISE=gold. Feels like committing chips.
+   ============================================================ */
+
+.decision-prompt {
+  padding: var(--space-6);
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--gold-border);
+  box-shadow: var(--shadow-glow-gold);
+  animation: slide-up 0.4s ease-out both;
+  text-align: center;
+}
+
+/* Header: "Action is on you." */
+.decision-prompt__header {
+  font-family: var(--font-body);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: var(--space-4);
+  letter-spacing: 0.02em;
+}
+
+/* Game state: pot, call amount, stack */
+.decision-prompt__state {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.decision-prompt__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.decision-prompt__stat-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.decision-prompt__stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.decision-prompt__stat-value--pot {
+  color: var(--gold);
+}
+
+.decision-prompt__stat-value--call {
+  color: var(--red-light);
+}
+
+/* --- Action buttons --- */
+.decision-prompt__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.decision-btn {
+  font-family: var(--font-ui);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  min-width: 160px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover shine effect */
+.decision-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.decision-btn:hover::after {
+  opacity: 1;
+}
+
+.decision-btn:active {
+  transform: scale(0.97);
+}
+
+/* CALL button: green */
+.decision-btn--call {
+  background: rgba(90, 173, 90, 0.12);
+  border-color: var(--green);
+  color: var(--green-light);
+  box-shadow: 0 0 0 0 rgba(90, 173, 90, 0.2);
+}
+
+.decision-btn--call:hover {
+  background: rgba(90, 173, 90, 0.2);
+  box-shadow: var(--shadow-glow-green);
+  border-color: var(--green-light);
+}
+
+/* FOLD button: red */
+.decision-btn--fold {
+  background: rgba(217, 79, 99, 0.12);
+  border-color: var(--red);
+  color: var(--red-light);
+  box-shadow: 0 0 0 0 rgba(217, 79, 99, 0.2);
+}
+
+.decision-btn--fold:hover {
+  background: rgba(217, 79, 99, 0.2);
+  box-shadow: var(--shadow-glow-red);
+  border-color: var(--red-light);
+}
+
+/* RAISE button: gold */
+.decision-btn--raise {
+  background: rgba(200, 160, 60, 0.12);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow: 0 0 0 0 rgba(200, 160, 60, 0.2);
+}
+
+.decision-btn--raise:hover {
+  background: rgba(200, 160, 60, 0.2);
+  box-shadow: var(--shadow-glow-gold);
+  border-color: var(--gold-light);
+}
+
+/* Button amount label (smaller, underneath the action word) */
+.decision-btn__amount {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  margin-top: var(--space-1);
+  opacity: 0.8;
+}
+
+/* Pulse animation on the prompt container */
+.decision-prompt--active {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .decision-prompt {
+    padding: var(--space-4);
+  }
+
+  .decision-prompt__header {
+    font-size: var(--text-lg);
+  }
+
+  .decision-prompt__state {
+    gap: var(--space-4);
+  }
+
+  .decision-btn {
+    font-size: var(--text-base);
+    padding: var(--space-3) var(--space-6);
+    min-width: 120px;
+  }
+}
