@@ -1,0 +1,169 @@
+/* ============================================================
+   ScenarioPlay Component Styles
+   The main scenario play page that assembles all components.
+   Layout: table top, feed/decision/reveal below.
+   ============================================================ */
+
+.scenario-play {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+/* --- Header bar --- */
+.scenario-play__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-6);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.scenario-play__back {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.scenario-play__back:hover {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.scenario-play__title {
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  flex: 1;
+}
+
+.scenario-play__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.scenario-play__difficulty {
+  color: var(--gold);
+  font-size: var(--text-sm);
+  letter-spacing: 2px;
+}
+
+.scenario-play__category {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 2px var(--space-2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xs);
+}
+
+/* --- Main content area --- */
+.scenario-play__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+/* --- Table section --- */
+.scenario-play__table-section {
+  flex-shrink: 0;
+}
+
+/* --- Feed/interaction section --- */
+.scenario-play__interaction {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* --- Reveal section (scrollable) --- */
+.scenario-play__reveal {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+/* --- Opponent reveal --- */
+.opponent-reveal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: slide-up 0.3s ease-out both;
+}
+
+.opponent-reveal__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.opponent-reveal__cards {
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* --- Next hand button --- */
+.scenario-play__next {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.next-hand-btn {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 600;
+  padding: var(--space-3) var(--space-8);
+  background: rgba(200, 160, 60, 0.12);
+  border: 2px solid var(--gold);
+  border-radius: var(--radius-md);
+  color: var(--gold-light);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.next-hand-btn:hover {
+  background: rgba(200, 160, 60, 0.2);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .scenario-play__header {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .scenario-play__title {
+    font-size: var(--text-base);
+  }
+
+  .scenario-play__content {
+    padding: var(--space-2);
+  }
+}
