@@ -1,0 +1,132 @@
+/* ============================================================
+   ActionFeed Component Styles
+   Sequential action display: info=gray, bets=red, board=gold
+   Each action slides in. The feed scrolls to newest.
+   ============================================================ */
+
+.action-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--space-3);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  scroll-behavior: smooth;
+}
+
+.action-feed::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* --- Individual action item --- */
+.action-item {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  animation: slide-up 0.3s ease-out both;
+  border-left: 3px solid transparent;
+}
+
+/* Info actions: neutral gray */
+.action-item--info {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.02);
+  border-left-color: var(--text-dim);
+}
+
+/* Bet/raise actions: red accent with monospace amount */
+.action-item--bet {
+  background: var(--red-bg);
+  border-left-color: var(--red);
+  color: var(--text-primary);
+}
+
+.action-item--bet .action-item__name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.action-item--bet .action-item__action {
+  color: var(--text-secondary);
+}
+
+.action-item--bet .action-item__amount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--red-light);
+}
+
+/* Fold action: dimmer */
+.action-item--fold {
+  background: rgba(255, 255, 255, 0.02);
+  border-left-color: var(--text-dim);
+  color: var(--text-muted);
+}
+
+.action-item--fold .action-item__name {
+  color: var(--text-muted);
+}
+
+/* Board actions: gold accent */
+.action-item--board {
+  background: var(--gold-bg);
+  border-left-color: var(--gold);
+  color: var(--gold-light);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.action-item--board .action-item__label {
+  color: var(--gold);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Decision action: should not render in feed (handled by DecisionPrompt) */
+
+/* --- Advance control --- */
+.action-feed__advance {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2);
+}
+
+.action-feed__advance-btn {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.action-feed__advance-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .action-feed {
+    max-height: 240px;
+    padding: var(--space-2);
+  }
+
+  .action-item {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
+  }
+}
