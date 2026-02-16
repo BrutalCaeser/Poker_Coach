@@ -7,10 +7,11 @@
  *   free-play   → FreePlay (sandbox mode, Phase 6)
  *   coach       → Coach (standalone chat, Phase 5)
  */
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import ScenarioMenu from './components/ScenarioMenu.jsx';
 import ScenarioPlay from './components/ScenarioPlay.jsx';
 import { scenarios, getScenarioById } from './scenarios/index.js';
+import { loadStats, recordResult as recordStatResult } from './userStats.js';
 import './App.css';
 
 /** Simple state-based router — no library needed */
@@ -25,33 +26,12 @@ function useRouter() {
   return { route, navigate };
 }
 
-/** User stats stored in state (persistence added in Phase 4.3) */
+/** User stats with localStorage persistence */
 function useUserStats() {
-  const [stats, setStats] = useState(() => {
-    try {
-      const saved = localStorage.getItem('poker-decisions-stats');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return { completed: parsed.completed || {} };
-      }
-    } catch { /* ignore */ }
-    return { completed: {} };
-  });
+  const [stats, setStats] = useState(() => loadStats());
 
   const recordResult = useCallback((scenarioId, userAction, isCorrect) => {
-    setStats((prev) => {
-      const next = {
-        ...prev,
-        completed: {
-          ...prev.completed,
-          [scenarioId]: { action: userAction, correct: isCorrect },
-        },
-      };
-      try {
-        localStorage.setItem('poker-decisions-stats', JSON.stringify(next));
-      } catch { /* ignore */ }
-      return next;
-    });
+    setStats((prev) => recordStatResult(prev, scenarioId, userAction, isCorrect));
   }, []);
 
   return { stats, recordResult };

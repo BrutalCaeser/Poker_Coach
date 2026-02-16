@@ -236,6 +236,21 @@
   font-family: var(--font-serif);
 }
 
+/* --- Progress Bar --- */
+.progress-bar__track {
+  height: 4px;
+  background: var(--bg-surface);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width 0.5s ease-out;
+}
+
 /* --- Responsive --- */
 @media (max-width: 600px) {
   .scenario-menu {

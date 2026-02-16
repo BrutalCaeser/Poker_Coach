@@ -12,6 +12,7 @@
  * @param {Function} props.onCoach     - Navigate to Coach
  */
 import { useMemo } from 'react';
+import { getMasteredConcepts } from '../userStats.js';
 import './ScenarioMenu.css';
 
 const TIER_LABELS = {
@@ -41,6 +42,8 @@ export default function ScenarioMenu({
   const accuracy = totalCompleted > 0
     ? Math.round((totalCorrect / totalCompleted) * 100)
     : 0;
+  const mastered = getMasteredConcepts(userStats, scenarios);
+  const progressPct = Math.round((totalCompleted / Math.max(scenarios.length, 1)) * 100);
 
   // Group scenarios by difficulty tier
   const tiers = useMemo(() => {
@@ -75,8 +78,21 @@ export default function ScenarioMenu({
             <span className="stat-item__value">{accuracy}%</span>
             <span className="stat-item__label">Accuracy</span>
           </div>
+          <div className="stat-item">
+            <span className="stat-item__value">{mastered.size}</span>
+            <span className="stat-item__label">Concepts</span>
+          </div>
         </div>
       </div>
+
+      {/* Progress Bar */}
+      {totalCompleted > 0 && (
+        <div className="progress-bar" style={{ maxWidth: 900, margin: '0 auto var(--space-3)' }}>
+          <div className="progress-bar__track">
+            <div className="progress-bar__fill" style={{ width: `${progressPct}%` }} />
+          </div>
+        </div>
+      )}
 
       {/* Navigation Row */}
       <div className="nav-row">
