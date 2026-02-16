@@ -1,0 +1,256 @@
+/* ============================================================
+   MathReveal Component Styles
+   Post-decision math breakdown with verdict, staggered steps,
+   insight, and takeaway. Color-coded: pass=green, fail=red,
+   warning=gold, key=gold accent.
+   ============================================================ */
+
+.math-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+/* --- Verdict (big green check or red X) --- */
+.math-reveal__verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  animation: verdict-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.verdict__icon {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.verdict__icon--correct {
+  color: var(--green);
+  text-shadow: var(--shadow-glow-green);
+}
+
+.verdict__icon--incorrect {
+  color: var(--red);
+  text-shadow: var(--shadow-glow-red);
+}
+
+.verdict__text {
+  font-family: var(--font-body);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  text-align: center;
+}
+
+.verdict__text--correct {
+  color: var(--green-light);
+}
+
+.verdict__text--incorrect {
+  color: var(--red-light);
+}
+
+.verdict__detail {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 500px;
+}
+
+/* --- Insight block --- */
+.math-reveal__insight {
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--gold);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: 1.7;
+  animation: slide-up 0.35s ease-out both;
+}
+
+/* --- Math steps container --- */
+.math-reveal__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.math-reveal__steps-header {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: var(--space-1);
+}
+
+/* --- Individual math step --- */
+.math-step {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid transparent;
+  animation: step-reveal 0.3s ease-out both;
+}
+
+/* Step status colors */
+.math-step--pass {
+  border-left-color: var(--green);
+  background: var(--green-bg);
+}
+
+.math-step--fail {
+  border-left-color: var(--red);
+  background: var(--red-bg);
+}
+
+.math-step--warning {
+  border-left-color: var(--gold);
+  background: var(--gold-bg);
+}
+
+.math-step--key {
+  border-left-color: var(--gold);
+  background: rgba(200, 160, 60, 0.06);
+  border-left-width: 4px;
+}
+
+/* Step left side: label + formula */
+.math-step__left {
+  flex: 1;
+  min-width: 0;
+}
+
+.math-step__label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.math-step__formula {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+/* Step right side: computed value */
+.math-step__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.math-step--pass .math-step__value {
+  color: var(--green-light);
+}
+
+.math-step--fail .math-step__value {
+  color: var(--red-light);
+}
+
+.math-step--warning .math-step__value {
+  color: var(--gold-light);
+}
+
+.math-step--key .math-step__value {
+  color: var(--gold);
+  font-size: var(--text-base);
+}
+
+/* Default (no status) */
+.math-step--default .math-step__value {
+  color: var(--text-primary);
+}
+
+/* --- Takeaway card --- */
+.math-reveal__takeaway {
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--bg-surface-elevated), var(--bg-surface));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gold-border);
+  animation: slide-up 0.4s ease-out both;
+}
+
+.takeaway__header {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.takeaway__header::before {
+  content: '💡';
+}
+
+.takeaway__text {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* --- Equity bar (visual distribution) --- */
+.equity-bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  overflow: hidden;
+  margin: var(--space-2) 0;
+}
+
+.equity-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--green), var(--green-light));
+  transition: width 1s ease-out;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .math-reveal {
+    padding: var(--space-2);
+  }
+
+  .math-reveal__verdict {
+    padding: var(--space-4) var(--space-2);
+  }
+
+  .verdict__icon {
+    font-size: 3rem;
+  }
+
+  .verdict__text {
+    font-size: var(--text-xl);
+  }
+
+  .math-step {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .math-step__value {
+    text-align: left;
+  }
+}
