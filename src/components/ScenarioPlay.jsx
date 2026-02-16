@@ -124,23 +124,23 @@ function getBoardCards(actions, upToIndex) {
 
 /**
  * Compute the running pot based on the visible actions.
- * This is a rough estimate from bet actions; the scenario's decision.pot
- * is used for the actual decision point.
+ * During ACTIONS phase we accumulate from blinds + bet actions.
+ * At DECISION and REVEAL we use the scenario's exact pot.
  */
-function getRunningPot(scenario, actionIndex) {
+function getRunningPot(scenario, actionIndex, phase) {
+  if (phase === 'DECISION' || phase === 'REVEAL') {
+    return scenario.decision.pot;
+  }
   const { blinds, players } = scenario;
   let pot = blinds.small + blinds.big + (blinds.ante * players.length);
 
   for (let i = 0; i < actionIndex && i < scenario.actions.length; i++) {
     const action = scenario.actions[i];
     if (action.type === 'bet' && action.amount > 0) {
-      // Simplification: add bet amounts. The scenario data has well-formed amounts.
-      // We don't track per-player contributions precisely here.
+      pot += action.amount;
     }
   }
-
-  // Use the scenario's decision pot when we reach the decision
-  return scenario.decision.pot;
+  return pot;
 }
 
 export default function ScenarioPlay({
@@ -161,9 +161,7 @@ export default function ScenarioPlay({
 
   // Calculate derived state
   const boardCards = getBoardCards(scenario.actions, state.actionIndex);
-  const pot = state.phase === PHASE.DECISION || state.phase === PHASE.REVEAL
-    ? scenario.decision.pot
-    : 0;
+  const pot = getRunningPot(scenario, state.actionIndex, state.phase);
 
   // Is the action feed complete (reached the decision point)?
   const decisionIndex = scenario.actions.findIndex((a) => a.type === 'decision');
@@ -246,13 +244,13 @@ export default function ScenarioPlay({
 
         {/* Interaction area */}
         <div className="scenario-play__interaction">
-          {/* Action Feed */}
-          {(state.phase === PHASE.ACTIONS || state.phase === PHASE.DECISION) && (
+          {/* Action Feed — persists through all phases after SETUP */}
+          {state.phase !== PHASE.SETUP && (
             <ActionFeed
               actions={scenario.actions}
               visibleCount={state.actionIndex}
               onAdvance={handleAdvance}
-              isComplete={feedComplete}
+              isComplete={feedComplete || state.phase === PHASE.REVEAL}
             />
           )}
 
