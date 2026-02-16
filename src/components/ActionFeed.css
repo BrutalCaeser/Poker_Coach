@@ -118,7 +118,16 @@
   color: var(--text-primary);
 }
 
-/* --- Responsive --- */
+/* --- Desktop: no artificial height cap, right column scrolls --- */
+@media (min-width: 1024px) {
+  .action-feed {
+    max-height: none;
+    overflow-y: visible;
+    flex-shrink: 0; /* Don't compress feed — let right panel scroll */
+  }
+}
+
+/* --- Responsive (small screens) --- */
 @media (max-width: 640px) {
   .action-feed {
     max-height: 240px;

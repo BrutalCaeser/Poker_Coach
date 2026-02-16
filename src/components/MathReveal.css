@@ -228,7 +228,23 @@
   transition: transform 1s ease-out;
 }
 
-/* --- Responsive --- */
+/* --- Desktop: tighter spacing in right column --- */
+@media (min-width: 1024px) {
+  .math-reveal {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .math-reveal__verdict {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .verdict__icon {
+    font-size: 3rem;
+  }
+}
+
+/* --- Responsive (small screens) --- */
 @media (max-width: 640px) {
   .math-reveal {
     padding: var(--space-2);

@@ -11,6 +11,14 @@
   padding: var(--space-4);
 }
 
+/* Smaller table on two-column desktop layout */
+@media (min-width: 1024px) {
+  .table-container {
+    max-width: 650px;
+    padding: var(--space-2);
+  }
+}
+
 /* --- The felt table surface --- */
 .table {
   position: relative;

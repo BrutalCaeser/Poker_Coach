@@ -22,7 +22,7 @@
 import { useState, useEffect } from 'react';
 import './MathReveal.css';
 
-const STEP_REVEAL_DELAY = 500; // ms between each step
+const STEP_REVEAL_DELAY = 300; // ms between each step (snappy)
 
 export default function MathReveal({
   isCorrect,
@@ -40,8 +40,8 @@ export default function MathReveal({
   useEffect(() => {
     if (revealPhase >= totalPhases) return;
 
-    const delay = revealPhase === 0 ? 600 : // Pause after verdict
-      revealPhase === 1 ? 800 :              // Pause after insight
+    const delay = revealPhase === 0 ? 500 : // Pause after verdict
+      revealPhase === 1 ? 600 :              // Pause after insight
         STEP_REVEAL_DELAY;                     // Each step
 
     const timer = setTimeout(() => {

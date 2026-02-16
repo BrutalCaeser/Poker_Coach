@@ -1,7 +1,9 @@
 /* ============================================================
    ScenarioPlay Component Styles
-   The main scenario play page that assembles all components.
-   Layout: table top, feed/decision/reveal below.
+   Two-column layout on desktop (≥1024px):
+     Left:  Table + DecisionPrompt + Opponent Reveal + Next Hand
+     Right: ActionFeed + MathReveal (scrollable)
+   Single column on tablet/mobile.
    ============================================================ */
 
 .scenario-play {
@@ -19,6 +21,7 @@
   padding: var(--space-3) var(--space-6);
   background: var(--bg-secondary);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 }
 
 .scenario-play__back {
@@ -70,36 +73,76 @@
   border-radius: var(--radius-xs);
 }
 
-/* --- Main content area --- */
+/* ===== Main content area ===== */
+
+/* Mobile-first: single column */
 .scenario-play__content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 900px;
   width: 100%;
+  max-width: 900px;
   margin: 0 auto;
   padding: var(--space-4);
   gap: var(--space-4);
 }
 
-/* --- Table section --- */
+/* --- Left column (table + decision + opponent reveal + next) --- */
+.scenario-play__left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
 .scenario-play__table-section {
   flex-shrink: 0;
 }
 
-/* --- Feed/interaction section --- */
-.scenario-play__interaction {
-  flex: 1;
+/* --- Right column (action feed + math reveal) --- */
+.scenario-play__right {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  flex: 1;
+  min-height: 0;
 }
 
-/* --- Reveal section (scrollable) --- */
+/* --- Reveal section in right column --- */
 .scenario-play__reveal {
   flex: 1;
-  overflow-y: auto;
-  max-height: 60vh;
+}
+
+/* --- Left reveal section (opponent cards + next hand) --- */
+.scenario-play__left-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: fade-in 0.3s ease-out both;
+}
+
+.scenario-play__reveal-btn-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2);
+}
+
+.reveal-opponents-btn {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gold);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: rgba(200, 160, 60, 0.08);
+  border: 1px solid var(--gold-border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.reveal-opponents-btn:hover {
+  background: rgba(200, 160, 60, 0.16);
+  box-shadow: var(--shadow-glow-gold);
 }
 
 /* --- Opponent reveal --- */
@@ -107,11 +150,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  flex-wrap: wrap;
   padding: var(--space-3);
   background: var(--bg-surface);
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: fade-in 0.3s ease-out both;
+}
+
+.opponent-reveal__player {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   animation: slide-up 0.3s ease-out both;
 }
 
@@ -130,7 +181,7 @@
 .scenario-play__next {
   display: flex;
   justify-content: center;
-  padding: var(--space-4);
+  padding: var(--space-3);
 }
 
 .next-hand-btn {
@@ -153,7 +204,80 @@
   box-shadow: var(--shadow-glow-gold);
 }
 
-/* --- Responsive --- */
+/* ===== DESKTOP TWO-COLUMN LAYOUT (≥1024px) ===== */
+@media (min-width: 1024px) {
+  .scenario-play__content {
+    flex-direction: row;
+    max-width: 1200px;
+    padding: var(--space-4) var(--space-6);
+    gap: var(--space-5);
+    /* Fill all available height below header */
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Left column: table + decision, vertically centered */
+  .scenario-play__left {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    overflow-y: auto;
+  }
+
+  /* Right column: fixed width, scrollable */
+  .scenario-play__right {
+    width: 380px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    /* Full height of the content area */
+    max-height: calc(100vh - 64px); /* Subtract header height */
+    padding-right: var(--space-2); /* Space for scrollbar */
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar for right panel */
+  .scenario-play__right::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scenario-play__right::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scenario-play__right::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-full);
+  }
+  .scenario-play__right::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Remove max-height on reveal — right column handles scrolling */
+  .scenario-play__reveal {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* ===== WIDESCREEN (≥1440px) ===== */
+@media (min-width: 1440px) {
+  .scenario-play__right {
+    width: 420px;
+  }
+}
+
+/* ===== TABLET / MOBILE (< 1024px) ===== */
+@media (max-width: 1023px) {
+  /* Keep the right column scrollable on smaller screens */
+  .scenario-play__right {
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
+  .scenario-play__reveal {
+    max-height: none;
+  }
+}
+
+/* --- Responsive (small screens) --- */
 @media (max-width: 640px) {
   .scenario-play__header {
     padding: var(--space-2) var(--space-3);
@@ -165,5 +289,9 @@
 
   .scenario-play__content {
     padding: var(--space-2);
+  }
+
+  .scenario-play__right {
+    max-height: 40vh;
   }
 }

@@ -4,6 +4,10 @@
  * The main scenario play page assembling Table, ActionFeed, DecisionPrompt,
  * and MathReveal into the complete playthrough flow.
  *
+ * Two-column layout on desktop (≥1024px):
+ *   Left:  Table + DecisionPrompt + Opponent Reveal + Next Hand
+ *   Right: ActionFeed + MathReveal (scrollable)
+ *
  * State machine: SETUP → ACTIONS → DECISION → REVEAL
  *
  * Uses useReducer for state management as specified in the build spec.
@@ -14,7 +18,7 @@
  * @param {Function} props.onNext    - Called when user wants the next scenario
  * @param {Function} [props.onComplete] - Called with { scenarioId, userAction, isCorrect }
  */
-import { useReducer, useCallback, useEffect } from 'react';
+import { useReducer, useCallback, useEffect, useRef } from 'react';
 import Table from './Table.jsx';
 import ActionFeed from './ActionFeed.jsx';
 import DecisionPrompt from './DecisionPrompt.jsx';
@@ -216,6 +220,17 @@ export default function ScenarioPlay({
   // Difficulty stars
   const stars = '★'.repeat(scenario.difficulty) + '☆'.repeat(3 - scenario.difficulty);
 
+  // Ref for auto-scrolling the right panel as math steps reveal
+  const rightPanelRef = useRef(null);
+
+  // Auto-scroll right panel to bottom when reveal phase content changes
+  useEffect(() => {
+    if (state.phase === PHASE.REVEAL && rightPanelRef.current) {
+      const el = rightPanelRef.current;
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    }
+  });
+
   return (
     <div className="scenario-play">
       {/* Header */}
@@ -231,30 +246,20 @@ export default function ScenarioPlay({
       </header>
 
       <div className="scenario-play__content">
-        {/* Poker table */}
-        <div className="scenario-play__table-section">
-          <Table
-            players={scenario.players}
-            heroIndex={scenario.heroIndex}
-            board={boardCards}
-            pot={pot}
-            revealAll={state.revealOpponents}
-          />
-        </div>
-
-        {/* Interaction area */}
-        <div className="scenario-play__interaction">
-          {/* Action Feed — persists through all phases after SETUP */}
-          {state.phase !== PHASE.SETUP && (
-            <ActionFeed
-              actions={scenario.actions}
-              visibleCount={state.actionIndex}
-              onAdvance={handleAdvance}
-              isComplete={feedComplete || state.phase === PHASE.REVEAL}
+        {/* ===== LEFT COLUMN: Table + Decision + Opponent Reveal + Next ===== */}
+        <div className="scenario-play__left">
+          {/* Poker table */}
+          <div className="scenario-play__table-section">
+            <Table
+              players={scenario.players}
+              heroIndex={scenario.heroIndex}
+              board={boardCards}
+              pot={pot}
+              revealAll={state.revealOpponents}
             />
-          )}
+          </div>
 
-          {/* Decision Prompt */}
+          {/* Decision Prompt — directly under the table, always visible */}
           {state.phase === PHASE.DECISION && decisionAction && (
             <DecisionPrompt
               pot={scenario.decision.pot}
@@ -266,25 +271,15 @@ export default function ScenarioPlay({
             />
           )}
 
-          {/* Math Reveal */}
+          {/* Post-decision left panel: Opponent Reveal + Next Hand */}
           {state.phase === PHASE.REVEAL && (
-            <div className="scenario-play__reveal">
-              <MathReveal
-                isCorrect={isCorrect}
-                userAction={state.userAction}
-                correctAction={scenario.decision.correctAction}
-                insight={scenario.insight}
-                mathSteps={scenario.mathSteps}
-                takeaway={scenario.takeaway}
-              />
-
+            <div className="scenario-play__left-reveal">
               {/* Opponent card reveal */}
               {!state.revealOpponents && (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-3)' }}>
+                <div className="scenario-play__reveal-btn-wrap">
                   <button
-                    className="scenario-play__back"
+                    className="reveal-opponents-btn"
                     onClick={() => dispatch({ type: 'REVEAL_OPPONENTS' })}
-                    style={{ borderColor: 'var(--gold-border)', color: 'var(--gold)' }}
                   >
                     Reveal Opponent Cards
                   </button>
@@ -297,7 +292,7 @@ export default function ScenarioPlay({
                     .filter((_, i) => i !== scenario.heroIndex)
                     .filter((p) => p.cards && p.cards.length > 0)
                     .map((player, i) => (
-                      <div key={i} className="opponent-reveal" style={{ animationDelay: `${i * 200}ms` }}>
+                      <div key={i} className="opponent-reveal__player" style={{ animationDelay: `${i * 150}ms` }}>
                         <span className="opponent-reveal__label">{player.name}:</span>
                         <div className="opponent-reveal__cards">
                           {player.cards.map((cardStr, j) => (
@@ -316,6 +311,33 @@ export default function ScenarioPlay({
                   Next Hand →
                 </button>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* ===== RIGHT COLUMN: Action Feed + Math Reveal ===== */}
+        <div className="scenario-play__right" ref={rightPanelRef}>
+          {/* Action Feed — persists through all phases after SETUP */}
+          {state.phase !== PHASE.SETUP && (
+            <ActionFeed
+              actions={scenario.actions}
+              visibleCount={state.actionIndex}
+              onAdvance={handleAdvance}
+              isComplete={feedComplete || state.phase === PHASE.REVEAL}
+            />
+          )}
+
+          {/* Math Reveal — appears in right column after decision */}
+          {state.phase === PHASE.REVEAL && (
+            <div className="scenario-play__reveal">
+              <MathReveal
+                isCorrect={isCorrect}
+                userAction={state.userAction}
+                correctAction={scenario.decision.correctAction}
+                insight={scenario.insight}
+                mathSteps={scenario.mathSteps}
+                takeaway={scenario.takeaway}
+              />
             </div>
           )}
         </div>
