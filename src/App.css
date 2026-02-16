@@ -1,0 +1,18 @@
+/* App.css — App-level layout overrides */
+
+#root {
+  min-height: 100vh;
+}
+
+/* Page transitions */
+.page-transition {
+  animation: fade-in var(--transition-normal) ease-out;
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
