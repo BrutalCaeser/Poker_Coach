@@ -34,11 +34,13 @@
 
 /**
  * @typedef {Object} Player
- * @property {string}       name     - Display name (e.g., "Hero", "Villain", "Player A")
+ * @property {string}       name     - Display name (e.g., "You", "Marcus", "Nadia")
  * @property {Position}     position - Table position
  * @property {number}       stack    - Starting stack size in chips/dollars
  * @property {CardString[]} cards    - Array of 2 hole cards (e.g., ["Ah", "Kd"])
  *                                     Empty array if cards are unknown/face-down.
+ * @property {string|null}  [behaviour] - Short descriptor of opponent play-style
+ *                                        (e.g., "Tight-Aggressive"). Null for the hero.
  */
 
 /**
