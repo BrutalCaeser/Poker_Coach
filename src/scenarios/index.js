@@ -211,7 +211,7 @@ const scenario4 = {
 
   players: [
     { name: "Luca", position: "BTN", stack: 45000, cards: ["8h", "7h"], behaviour: "Loose-Aggressive" },
-    { name: "Rafael", position: "SB", stack: 32000, cards: [], behaviour: "Tight-Passive" },
+    { name: "Rafael", position: "SB", stack: 32000, cards: ["9c", "4d"], behaviour: "Tight-Passive" },
     { name: "You", position: "BB", stack: 14000, cards: ["Ah", "Th"], behaviour: null },
   ],
   blinds: { small: 1000, big: 2000, ante: 200 },
@@ -911,9 +911,9 @@ const scenario15 = {
   category: "tournament",
 
   players: [
-    { name: "Big Stack (CO)", position: "CO", stack: 180000, cards: ["9d", "8c"], behaviour: "Loose-Aggressive" },
-    { name: "Short Stack (BTN)", position: "BTN", stack: 25000, cards: [], behaviour: "Tight-Passive" },
-    { name: "Medium Stack (SB)", position: "SB", stack: 40000, cards: [], behaviour: "Tight-Aggressive" },
+    { name: "Dmitri", position: "CO", stack: 180000, cards: ["9d", "8c"], behaviour: "Loose-Aggressive" },
+    { name: "Yuki", position: "BTN", stack: 25000, cards: ["7h", "3c"], behaviour: "Tight-Passive" },
+    { name: "Priya", position: "SB", stack: 40000, cards: ["5d", "2h"], behaviour: "Tight-Aggressive" },
     { name: "You", position: "BB", stack: 75000, cards: ["As", "Jc"], behaviour: null },
   ],
   blinds: { small: 2000, big: 4000, ante: 500 },
@@ -925,12 +925,12 @@ const scenario15 = {
     { type: "info", text: "You're on the BUBBLE. Two more eliminations and everyone's in the money." },
     { type: "info", text: "Antes posted: $2,000. Blinds posted: $2,000/$4,000." },
     { type: "info", text: "You have A\u2660J\u2663 in the BB with a medium stack (18.75 BB)." },
-    { type: "bet", player: 1, name: "Short Stack (BTN)", action: "folds", amount: 0 },
-    { type: "bet", player: 2, name: "Medium Stack (SB)", action: "folds", amount: 0 },
-    { type: "bet", player: 0, name: "Big Stack (CO)", action: "raises to", amount: 10000 },
-    { type: "info", text: "The big stack raises to $10,000. He's been bullying the table, exploiting bubble pressure." },
+    { type: "bet", player: 1, name: "Yuki", action: "folds", amount: 0 },
+    { type: "bet", player: 2, name: "Priya", action: "folds", amount: 0 },
+    { type: "bet", player: 0, name: "Dmitri", action: "raises to", amount: 10000 },
+    { type: "info", text: "Dmitri raises to $10,000. He's been bullying the table, exploiting bubble pressure." },
     { type: "info", text: "Pot is $18,000 ($2,000 antes + $2,000 SB + $4,000 BB + $10,000 raise). You need $6,000 to call." },
-    { type: "info", text: "The short stack at the table has 6 BB \u2014 they could bust any hand now." },
+    { type: "info", text: "Yuki has 6 BB \u2014 she could bust any hand now." },
     { type: "decision", options: ["call", "fold", "raise"], callAmount: 6000, raiseAmount: 25000 },
   ],
 
@@ -946,11 +946,11 @@ const scenario15 = {
   mathSteps: [
     { label: "Your hand", value: "AJ offsuit \u2014 strong hand in isolation", status: "key" },
     { label: "Chip equity (standard pot odds)", value: "25.0%", formula: "$6,000 / ($18,000 + $6,000) = 25.0%" },
-    { label: "Your equity vs big stack's wide range", value: "~55-60%", formula: "AJo vs top 35% \u2248 57%", status: "pass" },
+    { label: "Your equity vs Dmitri's wide range", value: "~55-60%", formula: "AJo vs top 35% \u2248 57%", status: "pass" },
     { label: "Chip EV says...", value: "CALL \u2014 57% equity >> 25% pot odds", status: "pass" },
     { label: "BUT this is a tournament on the bubble", value: "ICM changes everything", status: "warning" },
     { label: "ICM factor: busting = $0", value: "If you lose, you bust 20th \u2014 no prize money at all", status: "fail" },
-    { label: "ICM factor: short stack exists", value: "If you fold and the short stack busts, you're in the money", status: "key" },
+    { label: "ICM factor: short stack exists", value: "If you fold and Yuki busts, you're in the money", status: "key" },
     { label: "ICM factor: chip value is non-linear", value: "Going from 75K\u219275K+$18K is worth less than 75K\u21920 costs", status: "fail" },
     { label: "Risk premium on the bubble", value: "Need ~70%+ equity to justify risking elimination this close to the money", status: "warning" },
     { label: "Verdict", value: "FOLD \u2014 Survival > chip accumulation on the bubble", status: "key" },
