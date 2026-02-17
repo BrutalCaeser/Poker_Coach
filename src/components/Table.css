@@ -92,7 +92,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   z-index: var(--z-above);
   transition: opacity var(--transition-normal);
 }
@@ -113,6 +113,7 @@
   backdrop-filter: blur(4px);
   min-width: 70px;
   text-align: center;
+  position: relative;
 }
 
 .seat__info--hero {
@@ -148,6 +149,40 @@
   letter-spacing: 0.05em;
 }
 
+/* Behaviour tooltip — shown on hover over seat */
+.seat__behaviour {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gold-border);
+  white-space: nowrap;
+  z-index: calc(var(--z-above) + 10);
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.seat__behaviour::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--gold-border);
+}
+
+.table__seat:hover .seat__behaviour {
+  display: block;
+}
+
 /* Seat cards */
 .seat__cards {
   display: flex;
@@ -159,33 +194,33 @@
    Hero is always at the bottom center. */
 
 /* 2 players: hero bottom, villain top */
-.table--2 .table__seat:nth-child(1) { top: -5%; left: 50%; transform: translateX(-50%); }
-.table--2 .table__seat:nth-child(2) { bottom: -5%; left: 50%; transform: translateX(-50%); }
+.table--2 .table__seat:nth-child(1) { top: -12%; left: 50%; transform: translateX(-50%); }
+.table--2 .table__seat:nth-child(2) { bottom: -14%; left: 50%; transform: translateX(-50%); }
 
 /* 3 players */
 .table--3 .table__seat:nth-child(1) { top: 5%; left: 25%; transform: translateX(-50%); }
 .table--3 .table__seat:nth-child(2) { top: 5%; left: 75%; transform: translateX(-50%); }
-.table--3 .table__seat:nth-child(3) { bottom: -5%; left: 50%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(3) { bottom: -14%; left: 50%; transform: translateX(-50%); }
 
 /* 4 players */
-.table--4 .table__seat:nth-child(1) { top: -5%; left: 50%; transform: translateX(-50%); }
+.table--4 .table__seat:nth-child(1) { top: -12%; left: 50%; transform: translateX(-50%); }
 .table--4 .table__seat:nth-child(2) { top: 35%; left: 2%; transform: translateY(-50%); }
 .table--4 .table__seat:nth-child(3) { top: 35%; right: 2%; transform: translateY(-50%); }
-.table--4 .table__seat:nth-child(4) { bottom: -5%; left: 50%; transform: translateX(-50%); }
+.table--4 .table__seat:nth-child(4) { bottom: -14%; left: 50%; transform: translateX(-50%); }
 
 /* 5 players */
-.table--5 .table__seat:nth-child(1) { top: -5%; left: 35%; transform: translateX(-50%); }
-.table--5 .table__seat:nth-child(2) { top: -5%; left: 65%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(1) { top: -12%; left: 35%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(2) { top: -12%; left: 65%; transform: translateX(-50%); }
 .table--5 .table__seat:nth-child(3) { top: 35%; right: 0%; transform: translateY(-50%); }
 .table--5 .table__seat:nth-child(4) { top: 35%; left: 0%; transform: translateY(-50%); }
-.table--5 .table__seat:nth-child(5) { bottom: -5%; left: 50%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(5) { bottom: -14%; left: 50%; transform: translateX(-50%); }
 
 /* 6 players */
-.table--6 .table__seat:nth-child(1) { top: -5%; left: 35%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(2) { top: -5%; left: 65%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(1) { top: -12%; left: 35%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(2) { top: -12%; left: 65%; transform: translateX(-50%); }
 .table--6 .table__seat:nth-child(3) { top: 35%; right: 0%; transform: translateY(-50%); }
-.table--6 .table__seat:nth-child(4) { bottom: -5%; left: 65%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(5) { bottom: -5%; left: 35%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(4) { bottom: -14%; left: 65%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(5) { bottom: -14%; left: 35%; transform: translateX(-50%); }
 .table--6 .table__seat:nth-child(6) { top: 35%; left: 0%; transform: translateY(-50%); }
 
 /* --- Responsive --- */
@@ -214,5 +249,10 @@
 
   .seat__stack {
     font-size: 0.6rem;
+  }
+
+  .seat__behaviour {
+    font-size: 0.6rem;
+    padding: 2px var(--space-2);
   }
 }

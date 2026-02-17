@@ -99,6 +99,9 @@ export default function Table({
                 </span>
                 <span className="seat__stack">{formatAmount(player.stack)}</span>
                 <span className="seat__position">{player.position}</span>
+                {!isHero && player.behaviour && (
+                  <span className="seat__behaviour">{player.behaviour}</span>
+                )}
               </div>
 
               {isHero && (
