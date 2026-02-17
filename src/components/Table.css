@@ -57,12 +57,12 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -55%);
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  z-index: calc(var(--z-above) + 5);
+  z-index: var(--z-above);
 }
 
 .table__board {
@@ -194,34 +194,34 @@
    Hero is always at the bottom center. */
 
 /* 2 players: hero bottom, villain top */
-.table--2 .table__seat:nth-child(1) { top: -12%; left: 50%; transform: translateX(-50%); }
-.table--2 .table__seat:nth-child(2) { bottom: -14%; left: 50%; transform: translateX(-50%); }
+.table--2 .table__seat:nth-child(1) { top: -18%; left: 50%; transform: translateX(-50%); }
+.table--2 .table__seat:nth-child(2) { bottom: -24%; left: 50%; transform: translateX(-50%); }
 
 /* 3 players */
-.table--3 .table__seat:nth-child(1) { top: 5%; left: 25%; transform: translateX(-50%); }
-.table--3 .table__seat:nth-child(2) { top: 5%; left: 75%; transform: translateX(-50%); }
-.table--3 .table__seat:nth-child(3) { bottom: -14%; left: 50%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(1) { top: -8%; left: 20%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(2) { top: -8%; left: 80%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(3) { bottom: -24%; left: 50%; transform: translateX(-50%); }
 
 /* 4 players */
-.table--4 .table__seat:nth-child(1) { top: -12%; left: 50%; transform: translateX(-50%); }
-.table--4 .table__seat:nth-child(2) { top: 35%; left: 2%; transform: translateY(-50%); }
-.table--4 .table__seat:nth-child(3) { top: 35%; right: 2%; transform: translateY(-50%); }
-.table--4 .table__seat:nth-child(4) { bottom: -14%; left: 50%; transform: translateX(-50%); }
+.table--4 .table__seat:nth-child(1) { top: -18%; left: 50%; transform: translateX(-50%); }
+.table--4 .table__seat:nth-child(2) { top: 35%; left: -6%; transform: translateY(-50%); }
+.table--4 .table__seat:nth-child(3) { top: 35%; right: -6%; transform: translateY(-50%); }
+.table--4 .table__seat:nth-child(4) { bottom: -24%; left: 50%; transform: translateX(-50%); }
 
 /* 5 players */
-.table--5 .table__seat:nth-child(1) { top: -12%; left: 35%; transform: translateX(-50%); }
-.table--5 .table__seat:nth-child(2) { top: -12%; left: 65%; transform: translateX(-50%); }
-.table--5 .table__seat:nth-child(3) { top: 35%; right: 0%; transform: translateY(-50%); }
-.table--5 .table__seat:nth-child(4) { top: 35%; left: 0%; transform: translateY(-50%); }
-.table--5 .table__seat:nth-child(5) { bottom: -14%; left: 50%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(1) { top: -18%; left: 35%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(2) { top: -18%; left: 65%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(3) { top: 35%; right: -6%; transform: translateY(-50%); }
+.table--5 .table__seat:nth-child(4) { top: 35%; left: -6%; transform: translateY(-50%); }
+.table--5 .table__seat:nth-child(5) { bottom: -24%; left: 50%; transform: translateX(-50%); }
 
 /* 6 players */
-.table--6 .table__seat:nth-child(1) { top: -12%; left: 35%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(2) { top: -12%; left: 65%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(3) { top: 35%; right: 0%; transform: translateY(-50%); }
-.table--6 .table__seat:nth-child(4) { bottom: -14%; left: 65%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(5) { bottom: -14%; left: 35%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(6) { top: 35%; left: 0%; transform: translateY(-50%); }
+.table--6 .table__seat:nth-child(1) { top: -18%; left: 35%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(2) { top: -18%; left: 65%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(3) { top: 35%; right: -6%; transform: translateY(-50%); }
+.table--6 .table__seat:nth-child(4) { bottom: -24%; left: 65%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(5) { bottom: -24%; left: 35%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(6) { top: 35%; left: -6%; transform: translateY(-50%); }
 
 /* --- Responsive --- */
 @media (max-width: 640px) {
