@@ -18,13 +18,14 @@
  * @param {Function} props.onNext    - Called when user wants the next scenario
  * @param {Function} [props.onComplete] - Called with { scenarioId, userAction, isCorrect }
  */
-import { useReducer, useCallback, useEffect, useRef } from 'react';
+import { useReducer, useCallback, useEffect, useRef, useState } from 'react';
 import Table from './Table.jsx';
 import ActionFeed from './ActionFeed.jsx';
 import DecisionPrompt from './DecisionPrompt.jsx';
 import MathReveal from './MathReveal.jsx';
 import Card from './Card.jsx';
 import './ScenarioPlay.css';
+import ReferencePanel from './ReferencePanel.jsx';
 
 // --- Game phases ---
 const PHASE = {
@@ -154,6 +155,7 @@ export default function ScenarioPlay({
   onComplete,
 }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [activeTab, setActiveTab] = useState('hand');
 
   // Auto-start the scenario
   useEffect(() => {
@@ -161,6 +163,11 @@ export default function ScenarioPlay({
       const timer = setTimeout(() => dispatch({ type: 'START' }), 300);
       return () => clearTimeout(timer);
     }
+  }, [state.phase]);
+
+  // Auto-switch to "hand" tab when phase changes
+  useEffect(() => {
+    setActiveTab('hand');
   }, [state.phase]);
 
   // Calculate derived state
@@ -315,30 +322,52 @@ export default function ScenarioPlay({
           )}
         </div>
 
-        {/* ===== RIGHT COLUMN: Action Feed + Math Reveal ===== */}
+        {/* ===== RIGHT COLUMN: Tabs + Content ===== */}
         <div className="scenario-play__right" ref={rightPanelRef}>
-          {/* Action Feed — persists through all phases after SETUP */}
-          {state.phase !== PHASE.SETUP && (
-            <ActionFeed
-              actions={scenario.actions}
-              visibleCount={state.actionIndex}
-              onAdvance={handleAdvance}
-              isComplete={feedComplete || state.phase === PHASE.REVEAL}
-            />
-          )}
+          {/* Tab bar */}
+          <div className="scenario-play__tabs">
+            <button
+              className={`scenario-play__tab ${activeTab === 'hand' ? 'scenario-play__tab--active' : ''}`}
+              onClick={() => setActiveTab('hand')}
+            >
+              Hand
+            </button>
+            <button
+              className={`scenario-play__tab ${activeTab === 'reference' ? 'scenario-play__tab--active' : ''}`}
+              onClick={() => setActiveTab('reference')}
+            >
+              Reference
+            </button>
+          </div>
 
-          {/* Math Reveal — appears in right column after decision */}
-          {state.phase === PHASE.REVEAL && (
-            <div className="scenario-play__reveal">
-              <MathReveal
-                isCorrect={isCorrect}
-                userAction={state.userAction}
-                correctAction={scenario.decision.correctAction}
-                insight={scenario.insight}
-                mathSteps={scenario.mathSteps}
-                takeaway={scenario.takeaway}
-              />
-            </div>
+          {activeTab === 'hand' ? (
+            <>
+              {/* Action Feed — persists through all phases after SETUP */}
+              {state.phase !== PHASE.SETUP && (
+                <ActionFeed
+                  actions={scenario.actions}
+                  visibleCount={state.actionIndex}
+                  onAdvance={handleAdvance}
+                  isComplete={feedComplete || state.phase === PHASE.REVEAL}
+                />
+              )}
+
+              {/* Math Reveal — appears in right column after decision */}
+              {state.phase === PHASE.REVEAL && (
+                <div className="scenario-play__reveal">
+                  <MathReveal
+                    isCorrect={isCorrect}
+                    userAction={state.userAction}
+                    correctAction={scenario.decision.correctAction}
+                    insight={scenario.insight}
+                    mathSteps={scenario.mathSteps}
+                    takeaway={scenario.takeaway}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <ReferencePanel />
           )}
         </div>
       </div>
