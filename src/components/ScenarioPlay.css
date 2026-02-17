@@ -266,15 +266,15 @@
 
   /* Left column: table + decision, vertically centered */
   .scenario-play__left {
-    flex: 1;
+    flex: 1 1 0%;
     min-width: 0;
-    justify-content: center;
+    justify-content: flex-start;
     overflow-y: auto;
   }
 
-  /* Right column: fixed width, scrollable */
+  /* Right column: narrower, scrollable */
   .scenario-play__right {
-    width: 380px;
+    width: 320px;
     flex-shrink: 0;
     overflow-y: auto;
     /* Full height of the content area */
@@ -308,7 +308,7 @@
 /* ===== WIDESCREEN (≥1440px) ===== */
 @media (min-width: 1440px) {
   .scenario-play__right {
-    width: 420px;
+    width: 360px;
   }
 }
 

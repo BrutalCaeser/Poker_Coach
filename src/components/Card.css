@@ -116,64 +116,64 @@
 
 /* Large: hero cards */
 .card--lg {
-  width: 72px;
-  height: 100px;
+  width: 52px;
+  height: 72px;
 }
 
 .card--lg .card__content {
-  gap: 2px;
+  gap: 1px;
 }
 
 .card--lg .card__rank {
-  font-size: 1.75rem;
+  font-size: 1.35rem;
 }
 
 .card--lg .card__suit {
-  font-size: 1.5rem;
+  font-size: 1.15rem;
 }
 
 .card--lg .card__corner-rank {
-  font-size: 0.65rem;
+  font-size: 0.55rem;
 }
 
 .card--lg .card__corner-suit {
-  font-size: 0.55rem;
+  font-size: 0.45rem;
 }
 
 /* Medium: board cards */
 .card--md {
-  width: 60px;
-  height: 84px;
+  width: 48px;
+  height: 66px;
 }
 
 .card--md .card__rank {
-  font-size: 1.4rem;
-}
-
-.card--md .card__suit {
   font-size: 1.2rem;
 }
 
+.card--md .card__suit {
+  font-size: 1rem;
+}
+
 .card--md .card__corner-rank {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
 }
 
 .card--md .card__corner-suit {
-  font-size: 0.5rem;
+  font-size: 0.4rem;
 }
 
 /* Small: opponent cards */
 .card--sm {
-  width: 44px;
-  height: 62px;
+  width: 36px;
+  height: 50px;
 }
 
 .card--sm .card__rank {
-  font-size: 1rem;
+  font-size: 0.85rem;
 }
 
 .card--sm .card__suit {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 .card--sm .card__corner {
@@ -225,25 +225,30 @@
 /* --- Responsive card scaling --- */
 @media (max-width: 640px) {
   .card--lg {
-    width: 56px;
-    height: 80px;
-  }
-
-  .card--lg .card__rank {
-    font-size: 1.3rem;
-  }
-
-  .card--lg .card__suit {
-    font-size: 1.1rem;
-  }
-
-  .card--md {
     width: 44px;
     height: 62px;
   }
 
+  .card--lg .card__rank {
+    font-size: 1.1rem;
+  }
+
+  .card--lg .card__suit {
+    font-size: 0.9rem;
+  }
+
+  .card--md {
+    width: 40px;
+    height: 56px;
+  }
+
   .card--md .card__rank {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .card--sm {
+    width: 30px;
+    height: 42px;
   }
 
   .card-group {
@@ -253,12 +258,12 @@
 
 @media (max-width: 380px) {
   .card--lg {
-    width: 48px;
-    height: 68px;
+    width: 38px;
+    height: 54px;
   }
 
   .card--sm {
-    width: 30px;
-    height: 42px;
+    width: 26px;
+    height: 36px;
   }
 }

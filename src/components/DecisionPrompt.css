@@ -5,9 +5,9 @@
    ============================================================ */
 
 .decision-prompt {
-  padding: var(--space-6);
+  padding: var(--space-3) var(--space-4);
   background: var(--bg-surface-elevated);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: 2px solid var(--gold-border);
   box-shadow: var(--shadow-glow-gold);
   animation: slide-up 0.4s ease-out both;
@@ -17,10 +17,10 @@
 /* Header: "Action is on you." */
 .decision-prompt__header {
   font-family: var(--font-body);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--gold);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
   letter-spacing: 0.02em;
 }
 
@@ -28,8 +28,8 @@
 .decision-prompt__state {
   display: flex;
   justify-content: center;
-  gap: var(--space-6);
-  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
   flex-wrap: wrap;
 }
 
@@ -50,7 +50,7 @@
 
 .decision-prompt__stat-value {
   font-family: var(--font-mono);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -73,14 +73,14 @@
 
 .decision-btn {
   font-family: var(--font-ui);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: 700;
-  padding: var(--space-4) var(--space-8);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
   border: 2px solid transparent;
   cursor: pointer;
   transition: all var(--transition-normal);
-  min-width: 160px;
+  min-width: 120px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   position: relative;
