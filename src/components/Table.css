@@ -8,14 +8,14 @@
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-4) 3rem;
 }
 
 /* Smaller table on two-column desktop layout */
 @media (min-width: 1024px) {
   .table-container {
     max-width: 650px;
-    padding: var(--space-2);
+    padding: var(--space-2) var(--space-2) 2.5rem;
   }
 }
 
@@ -62,7 +62,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  z-index: var(--z-above);
+  z-index: calc(var(--z-above) + 5);
 }
 
 .table__board {
@@ -99,6 +99,17 @@
 
 .table__seat--hero {
   z-index: calc(var(--z-above) + 1);
+}
+
+/* Push info chips outside the table boundary for all seats.
+   Opponents: info above cards (away from table center).
+   Hero: info below cards (away from table center). */
+.table__seat:not(.table__seat--hero) .seat__info {
+  order: -1;
+}
+
+.table__seat--hero .seat__info {
+  order: 1;
 }
 
 /* Player info chip (name + stack) */
@@ -198,8 +209,8 @@
 .table--2 .table__seat:nth-child(2) { bottom: -24%; left: 50%; transform: translateX(-50%); }
 
 /* 3 players */
-.table--3 .table__seat:nth-child(1) { top: -8%; left: 20%; transform: translateX(-50%); }
-.table--3 .table__seat:nth-child(2) { top: -8%; left: 80%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(1) { top: -12%; left: 20%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(2) { top: -12%; left: 80%; transform: translateX(-50%); }
 .table--3 .table__seat:nth-child(3) { bottom: -24%; left: 50%; transform: translateX(-50%); }
 
 /* 4 players */
@@ -226,7 +237,7 @@
 /* --- Responsive --- */
 @media (max-width: 640px) {
   .table-container {
-    padding: var(--space-2);
+    padding: var(--space-2) var(--space-2) 2rem;
   }
 
   .table {
