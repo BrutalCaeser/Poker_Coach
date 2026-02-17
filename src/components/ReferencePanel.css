@@ -70,6 +70,24 @@
   color: var(--text-muted);
 }
 
+.reference-panel__col-head {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding-bottom: var(--space-1) !important;
+}
+
+.reference-panel__table--matchups td:last-child {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--gold-light) !important;
+  white-space: nowrap;
+}
+
 .reference-panel__mono {
   font-family: var(--font-mono);
   font-weight: 600;

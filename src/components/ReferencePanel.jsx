@@ -2,7 +2,7 @@
  * ReferencePanel Component
  * ========================
  * Static quick-reference card with poker math formulas,
- * common outs, SPR ranges, and key rules.
+ * common outs, SPR ranges, preflop matchups, and key rules.
  * Shown in the "Reference" tab of the right panel.
  */
 import './ReferencePanel.css';
@@ -18,6 +18,51 @@ export default function ReferencePanel() {
         <p className="reference-panel__note">
           Compare to your equity. If equity &gt; pot odds → call.
         </p>
+      </section>
+
+      <section className="reference-panel__section">
+        <h3 className="reference-panel__heading">Equity Needed by Bet Size</h3>
+        <table className="reference-panel__table">
+          <thead>
+            <tr>
+              <td className="reference-panel__col-head">Bet Size</td>
+              <td className="reference-panel__col-head">Equity Needed</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>¼ pot</td><td className="reference-panel__mono">16.7%</td></tr>
+            <tr><td>⅓ pot</td><td className="reference-panel__mono">20.0%</td></tr>
+            <tr><td>½ pot</td><td className="reference-panel__mono">25.0%</td></tr>
+            <tr><td>⅔ pot</td><td className="reference-panel__mono">28.6%</td></tr>
+            <tr><td>¾ pot</td><td className="reference-panel__mono">30.0%</td></tr>
+            <tr><td>Full pot</td><td className="reference-panel__mono">33.3%</td></tr>
+            <tr><td>1.5× pot</td><td className="reference-panel__mono">37.5%</td></tr>
+            <tr><td>2× pot</td><td className="reference-panel__mono">40.0%</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section className="reference-panel__section">
+        <h3 className="reference-panel__heading">Key Preflop Match-ups</h3>
+        <table className="reference-panel__table reference-panel__table--matchups">
+          <thead>
+            <tr>
+              <td className="reference-panel__col-head">Match-up</td>
+              <td className="reference-panel__col-head">Equity</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>AA vs KK</td><td>~82 / 18</td></tr>
+            <tr><td>KK vs AKo</td><td>~70 / 30</td></tr>
+            <tr><td>QQ vs AKs</td><td>~54 / 46</td></tr>
+            <tr><td>AKo vs JJ</td><td>~43 / 57</td></tr>
+            <tr><td>AKs vs 76s</td><td>~62 / 38</td></tr>
+            <tr><td>Pair vs 2 overcards</td><td>~55 / 45</td></tr>
+            <tr><td>Pair vs 1 overcard</td><td>~70 / 30</td></tr>
+            <tr><td>Pair vs undercards</td><td>~82 / 18</td></tr>
+            <tr><td>Dominated (AK vs AQ)</td><td>~73 / 27</td></tr>
+          </tbody>
+        </table>
       </section>
 
       <section className="reference-panel__section">

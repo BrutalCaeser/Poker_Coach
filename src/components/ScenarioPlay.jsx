@@ -293,25 +293,6 @@ export default function ScenarioPlay({
                 </div>
               )}
 
-              {state.revealOpponents && (
-                <div className="opponent-reveal">
-                  {scenario.players
-                    .filter((_, i) => i !== scenario.heroIndex)
-                    .filter((p) => p.cards && p.cards.length > 0)
-                    .map((player, i) => (
-                      <div key={i} className="opponent-reveal__player" style={{ animationDelay: `${i * 150}ms` }}>
-                        <span className="opponent-reveal__label">{player.name}:</span>
-                        <div className="opponent-reveal__cards">
-                          {player.cards.map((cardStr, j) => (
-                            <Card key={j} card={cardStr} faceUp={true} size="sm" dealing={true} />
-                          ))}
-                        </div>
-                      </div>
-                    ))
-                  }
-                </div>
-              )}
-
               {/* Next hand button */}
               <div className="scenario-play__next">
                 <button className="next-hand-btn" onClick={onNext}>
