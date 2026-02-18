@@ -261,15 +261,13 @@
     gap: var(--space-5);
     /* Fill all available height below header */
     flex: 1;
-    overflow: hidden;
   }
 
-  /* Left column: table + decision, vertically centered */
+  /* Left column: table + decision */
   .scenario-play__left {
     flex: 1 1 0%;
     min-width: 0;
     justify-content: flex-start;
-    overflow-y: auto;
   }
 
   /* Right column: narrower, scrollable */

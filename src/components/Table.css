@@ -8,14 +8,14 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
-  padding: var(--space-3) var(--space-4) 5rem;
+  padding: 5rem var(--space-4) 6rem;
 }
 
 /* Two-column desktop layout — table gets more room */
 @media (min-width: 1024px) {
   .table-container {
     max-width: 100%;
-    padding: var(--space-2) var(--space-2) 4rem;
+    padding: 5rem var(--space-2) 6rem;
   }
 }
 
@@ -70,7 +70,6 @@
   gap: var(--space-1);
   align-items: center;
   justify-content: center;
-  min-height: 50px;
 }
 
 .table__pot {
@@ -84,6 +83,7 @@
   border-radius: var(--radius-full);
   border: 1px solid var(--gold-border);
   white-space: nowrap;
+  order: -1;
 }
 
 /* --- Player seats --- */
@@ -201,44 +201,49 @@
 }
 
 /* --- Seat positions (2-6 players) ---
-   Cards sit right at the table edge (half in, half out).
+   Cards sit at the table edge — mostly OUTSIDE, small overlap inside.
    Info chips are pushed outside via CSS order.
-   Hero is always at the bottom center. */
+   Hero is always at the bottom center.
+
+   Math (desktop ~444px tall table):
+   - Top/bottom offset -20% ≈ 89px → cards just at edge
+   - Side offset -6% ≈ 48px → cards just at edge
+*/
 
 /* 2 players: hero bottom, villain top */
-.table--2 .table__seat:nth-child(1) { top: -6%; left: 50%; transform: translateX(-50%); }
-.table--2 .table__seat:nth-child(2) { bottom: -6%; left: 50%; transform: translateX(-50%); }
+.table--2 .table__seat:nth-child(1) { top: -20%; left: 50%; transform: translateX(-50%); }
+.table--2 .table__seat:nth-child(2) { bottom: -20%; left: 50%; transform: translateX(-50%); }
 
 /* 3 players */
-.table--3 .table__seat:nth-child(1) { top: -4%; left: 22%; transform: translateX(-50%); }
-.table--3 .table__seat:nth-child(2) { top: -4%; right: 22%; transform: translateX(50%); }
-.table--3 .table__seat:nth-child(3) { bottom: -6%; left: 50%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(1) { top: -20%; left: 25%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(2) { top: -20%; left: 75%; transform: translateX(-50%); }
+.table--3 .table__seat:nth-child(3) { bottom: -20%; left: 50%; transform: translateX(-50%); }
 
 /* 4 players */
-.table--4 .table__seat:nth-child(1) { top: -6%; left: 50%; transform: translateX(-50%); }
-.table--4 .table__seat:nth-child(2) { top: 40%; left: 2%; transform: translateY(-50%); }
-.table--4 .table__seat:nth-child(3) { top: 40%; right: 2%; transform: translateY(-50%); }
-.table--4 .table__seat:nth-child(4) { bottom: -6%; left: 50%; transform: translateX(-50%); }
+.table--4 .table__seat:nth-child(1) { top: -20%; left: 50%; transform: translateX(-50%); }
+.table--4 .table__seat:nth-child(2) { top: 40%; left: -6%; transform: translateY(-50%); }
+.table--4 .table__seat:nth-child(3) { top: 40%; right: -6%; transform: translateY(-50%); }
+.table--4 .table__seat:nth-child(4) { bottom: -20%; left: 50%; transform: translateX(-50%); }
 
 /* 5 players */
-.table--5 .table__seat:nth-child(1) { top: -6%; left: 35%; transform: translateX(-50%); }
-.table--5 .table__seat:nth-child(2) { top: -6%; left: 65%; transform: translateX(-50%); }
-.table--5 .table__seat:nth-child(3) { top: 40%; right: 2%; transform: translateY(-50%); }
-.table--5 .table__seat:nth-child(4) { top: 40%; left: 2%; transform: translateY(-50%); }
-.table--5 .table__seat:nth-child(5) { bottom: -6%; left: 50%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(1) { top: -20%; left: 35%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(2) { top: -20%; left: 65%; transform: translateX(-50%); }
+.table--5 .table__seat:nth-child(3) { top: 40%; right: -6%; transform: translateY(-50%); }
+.table--5 .table__seat:nth-child(4) { top: 40%; left: -6%; transform: translateY(-50%); }
+.table--5 .table__seat:nth-child(5) { bottom: -20%; left: 50%; transform: translateX(-50%); }
 
 /* 6 players */
-.table--6 .table__seat:nth-child(1) { top: -6%; left: 35%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(2) { top: -6%; left: 65%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(3) { top: 40%; right: 2%; transform: translateY(-50%); }
-.table--6 .table__seat:nth-child(4) { bottom: -6%; left: 65%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(5) { bottom: -6%; left: 35%; transform: translateX(-50%); }
-.table--6 .table__seat:nth-child(6) { top: 40%; left: 2%; transform: translateY(-50%); }
+.table--6 .table__seat:nth-child(1) { top: -20%; left: 35%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(2) { top: -20%; left: 65%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(3) { top: 40%; right: -6%; transform: translateY(-50%); }
+.table--6 .table__seat:nth-child(4) { bottom: -20%; left: 65%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(5) { bottom: -20%; left: 35%; transform: translateX(-50%); }
+.table--6 .table__seat:nth-child(6) { top: 40%; left: -6%; transform: translateY(-50%); }
 
 /* --- Responsive --- */
 @media (max-width: 640px) {
   .table-container {
-    padding: var(--space-2) var(--space-2) 3rem;
+    padding: 3.5rem var(--space-2) 4rem;
   }
 
   .table {
