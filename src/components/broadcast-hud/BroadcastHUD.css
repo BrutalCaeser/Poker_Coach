@@ -1,0 +1,259 @@
+/* ============================================================
+   BroadcastHUD — Broadcast TV-graphics overlay styles
+   ESPN/PokerGO aesthetic. Tokens from styles.css.
+   ============================================================ */
+
+/* ── EquityBarBroadcast ───────────────────────────────────── */
+
+/* Outer container — full-width dark strip */
+.bhud-eb {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 16px 8px;
+  background: rgba(0, 0, 0, 0.85);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Labels row: HERO left, VILLAIN right */
+.bhud-eb__labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bhud-eb__player {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted, #9a9590);
+  line-height: 1;
+}
+
+.bhud-eb__player--villain {
+  text-align: right;
+}
+
+/* Bar strip */
+.bhud-eb__strip {
+  position: relative;
+  height: 14px;
+  display: flex;
+  border-radius: 2px;
+  overflow: visible; /* allow divider to poke above */
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Hero fill — left, slides from center */
+.bhud-eb__fill--hero {
+  height: 100%;
+  /* Transition is driven by JS (splitPct state), inline style width */
+  transition: width 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 2px 0 0 2px;
+  will-change: width;
+}
+
+/* Villain fill — right */
+.bhud-eb__fill--villain {
+  height: 100%;
+  transition: width 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+  background: linear-gradient(90deg, #8b1c2c, var(--red, #d94f63));
+  border-radius: 0 2px 2px 0;
+  will-change: width;
+}
+
+/* Hero color variants */
+.bhud-eb__fill--hero-blue {
+  background: linear-gradient(90deg, #0e4fa8, #1e90ff, #4fb3ff);
+  box-shadow: 0 0 10px rgba(30, 144, 255, 0.45);
+}
+
+.bhud-eb__fill--hero-green {
+  background: linear-gradient(90deg, var(--green-dim, #458a45), var(--green, #5aad5a), var(--green-light, #72c472));
+  box-shadow: 0 0 10px rgba(90, 173, 90, 0.4);
+}
+
+/* Gold divider tick at split — sits on top */
+.bhud-eb__divider {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 3px;
+  background: var(--gold, #c8a03c);
+  transform: translateX(-50%);
+  z-index: 10;
+  border-radius: 1.5px;
+  box-shadow: 0 0 8px rgba(200, 160, 60, 0.7), 0 0 2px rgba(200, 160, 60, 1);
+  transition: left 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: left;
+}
+
+/* Break-even tick — silver, thinner */
+.bhud-eb__breakeventick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--text-secondary, #c4bfb6);
+  transform: translateX(-50%);
+  z-index: 9;
+  border-radius: 1px;
+  opacity: 0.6;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Numerals row — big tabular % on each side */
+.bhud-eb__numerals {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.bhud-eb__pct {
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  transition: color 200ms ease;
+}
+
+.bhud-eb__pct--blue   { color: #4fb3ff; }
+.bhud-eb__pct--green  { color: var(--green-light, #72c472); text-shadow: 0 0 10px rgba(90, 173, 90, 0.4); }
+.bhud-eb__pct--villain { color: var(--red-light, #e56b7d); }
+
+/* ── Reduced motion ───────────────────────────────────────── */
+/* Global rule in styles.css collapses transitions to 0.01ms —
+   fills & divider snap instantly. Number count-up is handled in JS. */
+
+/* ── BroadcastHUD container ──────────────────────────────── */
+
+/* Outer wrapper — absolute-positioned overlay strip by default.
+   Parent places it via class or absolute positioning. */
+.bhud {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  pointer-events: none; /* passthrough — it's a TV overlay */
+  user-select: none;
+  animation: fade-in var(--dur-base, 220ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+/* Allow the whole HUD to be positioned absolutely over the table */
+.bhud--overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-overlay, 100);
+}
+
+/* ── Hand-strength label pill ────────────────────────────── */
+
+.bhud__hand-label {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid var(--gold-border, rgba(200, 160, 60, 0.25));
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: 0 0 12px rgba(200, 160, 60, 0.15);
+  animation: slide-up var(--dur-base, 220ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+.bhud__hand-label-text {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold, #c8a03c);
+  white-space: nowrap;
+}
+
+/* ── TO CALL strip ───────────────────────────────────────── */
+
+.bhud__call-strip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.82);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  animation: fade-in var(--dur-base, 220ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+.bhud__call-label {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted, #9a9590);
+  white-space: nowrap;
+}
+
+.bhud__call-amount {
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0ece4);
+  white-space: nowrap;
+}
+
+.bhud__call-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.bhud__pot-odds-label {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted, #9a9590);
+  white-space: nowrap;
+}
+
+.bhud__pot-odds-value {
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gold, #c8a03c);
+  white-space: nowrap;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .bhud-eb__pct {
+    font-size: 1.2rem;
+  }
+
+  .bhud-eb__strip {
+    height: 10px;
+  }
+
+  .bhud__call-strip {
+    gap: 8px;
+    padding: 5px 10px;
+  }
+
+  .bhud__call-amount,
+  .bhud__pot-odds-value {
+    font-size: 0.9rem;
+  }
+}

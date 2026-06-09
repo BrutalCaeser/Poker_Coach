@@ -1,0 +1,559 @@
+/* ============================================================
+   TableSurface.css — Broadcast-quality poker table surface
+   Premium televised aesthetic: WSOP / PokerGO feature table.
+   GPU-safe: animate ONLY transform + opacity.
+   prefers-reduced-motion compliant.
+   ============================================================ */
+
+/* ── Outer wrapper (holds the table + overflow for seat pods) ── */
+.ts-wrap {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  /* Generous vertical padding so seated pods don't clip */
+  padding: 5.5rem var(--space-4) 6.5rem;
+  position: relative;
+}
+
+/* ================================================================
+   Core table oval (.ts)
+   Shape + felt + rail — all in one element + two pseudo-elements.
+   ================================================================ */
+.ts {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.85 / 1;
+  border-radius: 50%;
+  overflow: visible;
+
+  /* ── Felt surface: woven speed-cloth texture over a spotlit radial ──
+     Layer order (bottom → top):
+       1. Spotlit radial — #2e7a4a center → #163e26 mid → #0e2c1c rim
+       2. Speed-cloth warp (vertical lines, ~3px pitch)
+       3. Speed-cloth weft (horizontal lines, ~3px pitch)
+  ── */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 3px
+    ),
+    radial-gradient(
+      ellipse at 50% 42%,
+      #2e7a4a 0%,
+      #236040 20%,
+      #1a4e34 40%,
+      #163e26 60%,
+      #102e1c 80%,
+      #0e2c1c 100%
+    );
+
+  /* ── Rail: multi-ring padded leather + gold seam + drop shadow ──
+     box-shadow layers (outward → inward):
+       1-2. Table drop shadow (key + ambient)
+       3.   Warm leather outer ring (16px)
+       4.   Dark leather inner lip (12px) — adds depth/curl
+       5.   Thin gold seam (1px) — TV highlight line
+       6-7. Inset felt-meets-rail shadow + subtle top-lit sheen
+  ── */
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.75),
+    0  6px 20px rgba(0, 0, 0, 0.50),
+    0  0   0 16px #5c3d1e,   /* leather outer ring  */
+    0  0   0 28px #2e1a0a,   /* dark inner lip      */
+    0  0   0 29px #c8a03c,   /* gold seam (1px)     */
+    0  0   0 32px #1a0e06,   /* rail shadow rim     */
+    inset 0 3px 8px  rgba(255, 255, 255, 0.06),
+    inset 0 0   80px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Pseudo 1: edge vignette + woven shadow depth ── */
+.ts::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      transparent 48%,
+      rgba(0, 0, 0, 0.30) 100%
+    );
+  /* A second, tighter vignette brightens the center spot */
+  /* (stacked via mix-blend-mode: multiply is avoided — uses opacity instead) */
+}
+
+/* ── Pseudo 2: top-light reflection (overhead studio lamp) ── */
+.ts::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 18%,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 55%
+  );
+}
+
+/* ================================================================
+   Betting line — cream ellipse printed on the felt
+   Positioned ~11% inset from the felt edge on each axis.
+   ================================================================ */
+.ts-betting-line {
+  position: absolute;
+  inset: 11% 13%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(240, 230, 180, 0.14);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ================================================================
+   Felt watermark logo — centered inline SVG text
+   Sits slightly below center (above the board reads as logo territory).
+   ================================================================ */
+.ts-logo {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 36px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
+}
+
+/* ================================================================
+   Center cluster: pot + board + dealer row
+   ================================================================ */
+.ts-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  z-index: calc(var(--z-above, 10) + 5);
+  /* Center cluster must not clip chip stack */
+  overflow: visible;
+}
+
+/* ── Community board ── */
+.ts-board {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Pot compound — chip stack + label stacked vertically ── */
+.ts-pot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  /* entrance animation (uses chips-to-pot from global styles.css) */
+}
+
+.ts-pot.anim-chips {
+  animation: chips-to-pot var(--dur-base, 220ms) var(--ease-out, ease-out) both;
+}
+
+/* Chip-stack SVG */
+.ts-chip-stack {
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+}
+
+/* Pot text row: "POT" small gray label + bold tabular amount */
+.ts-pot__label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.ts-pot__word {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted, #9a9590);
+}
+
+.ts-pot__amount {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-base, 1rem);
+  font-weight: 700;
+  color: var(--gold, #c8a03c);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Bottom row: dealer button + ticker ── */
+.ts-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+/* ── Dealer button ── */
+.ts-dealer {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  background: var(--gold-sheen, linear-gradient(135deg, #e8c96a 0%, #c8a03c 40%, #a8841e 100%));
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(200, 160, 60, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30);
+}
+
+.ts-dealer__label {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #1a1000;
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* ── Action ticker ── */
+.ts-ticker {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full, 9999px);
+  padding: 3px var(--space-3);
+  max-width: 220px;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.ts-ticker__text {
+  display: block;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary, #c4bfb6);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  /* Fade in on key change (re-keyed by ActionTicker on each new action) */
+  animation: fade-in var(--dur-base, 220ms) var(--ease-out, ease-out) both;
+  will-change: opacity;
+}
+
+/* ================================================================
+   Seat positioning (ts-seat wrappers around player pods)
+   Hero is always the LAST child; opponents fill seats 1..n-1.
+   Seat numbering: opponents in deal order, hero last (bottom-center).
+
+   Position origin: top-left of the .ts oval.
+   Seats use absolute positioning with percentage-based top/left/bottom/right.
+   The seat pods are centered via translateX(-50%) or translateY(-50%).
+
+   Each count sets seats so:
+   - Hero (last :nth-child) always sits at bottom-center (~bottom: -18%)
+   - Opponents arc around the top half and sides
+
+   The -16% to -20% overhang anchors pods at the rail edge, just outside
+   the felt, so they feel physically attached to the leather.
+   ================================================================ */
+.ts-seat {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: var(--z-above, 10);
+  /* Smooth opacity-only fade (no layout animations) */
+  transition: opacity var(--dur-base, 220ms) var(--ease-out, ease-out);
+}
+
+/* ── 2 players (heads-up — flagship) ── */
+.ts--2 .ts-seat:nth-child(1) { top: -18%;    left: 50%;     transform: translateX(-50%); }
+.ts--2 .ts-seat:nth-child(2) { bottom: -18%; left: 50%;     transform: translateX(-50%); }
+
+/* ── 3 players ── */
+.ts--3 .ts-seat:nth-child(1) { top: -18%;    left: 28%;     transform: translateX(-50%); }
+.ts--3 .ts-seat:nth-child(2) { top: -18%;    left: 72%;     transform: translateX(-50%); }
+.ts--3 .ts-seat:nth-child(3) { bottom: -18%; left: 50%;     transform: translateX(-50%); }
+
+/* ── 4 players ── */
+.ts--4 .ts-seat:nth-child(1) { top: -18%;    left: 50%;     transform: translateX(-50%); }
+.ts--4 .ts-seat:nth-child(2) { top: 38%;     left: -7%;     transform: translateY(-50%); }
+.ts--4 .ts-seat:nth-child(3) { top: 38%;     right: -7%;    transform: translateY(-50%); }
+.ts--4 .ts-seat:nth-child(4) { bottom: -18%; left: 50%;     transform: translateX(-50%); }
+
+/* ── 5 players ── */
+.ts--5 .ts-seat:nth-child(1) { top: -18%;    left: 30%;     transform: translateX(-50%); }
+.ts--5 .ts-seat:nth-child(2) { top: -18%;    left: 70%;     transform: translateX(-50%); }
+.ts--5 .ts-seat:nth-child(3) { top: 40%;     right: -7%;    transform: translateY(-50%); }
+.ts--5 .ts-seat:nth-child(4) { top: 40%;     left: -7%;     transform: translateY(-50%); }
+.ts--5 .ts-seat:nth-child(5) { bottom: -18%; left: 50%;     transform: translateX(-50%); }
+
+/* ── 6 players ── */
+.ts--6 .ts-seat:nth-child(1) { top: -18%;    left: 30%;     transform: translateX(-50%); }
+.ts--6 .ts-seat:nth-child(2) { top: -18%;    left: 70%;     transform: translateX(-50%); }
+.ts--6 .ts-seat:nth-child(3) { top: 38%;     right: -7%;    transform: translateY(-50%); }
+.ts--6 .ts-seat:nth-child(4) { bottom: -18%; left: 68%;     transform: translateX(-50%); }
+.ts--6 .ts-seat:nth-child(5) { bottom: -18%; left: 32%;     transform: translateX(-50%); }
+.ts--6 .ts-seat:nth-child(6) { top: 38%;     left: -7%;     transform: translateY(-50%); }
+
+/* Hero seat (always last child) — slightly elevated z-index */
+.ts--2 .ts-seat:nth-child(2),
+.ts--3 .ts-seat:nth-child(3),
+.ts--4 .ts-seat:nth-child(4),
+.ts--5 .ts-seat:nth-child(5),
+.ts--6 .ts-seat:nth-child(6) {
+  z-index: calc(var(--z-above, 10) + 1);
+}
+
+/* ================================================================
+   Venue themes — override felt + rail colors via class modifier
+   ================================================================ */
+
+/* WSOP: warmer, brighter spotlight */
+.ts--venue-wsop {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 3px
+    ),
+    radial-gradient(
+      ellipse at 50% 42%,
+      #35824f 0%,
+      #286843 22%,
+      #1d5336 44%,
+      #133e27 66%,
+      #0d2e1c 100%
+    );
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.80),
+    0  6px 20px rgba(0, 0, 0, 0.55),
+    0  0   0 16px #6b3a18,
+    0  0   0 28px #33190a,
+    0  0   0 29px #e8c05a,
+    0  0   0 32px #1a0a00,
+    inset 0 3px 8px  rgba(255, 255, 255, 0.07),
+    inset 0 0   80px rgba(0, 0, 0, 0.32);
+}
+
+/* Tournament: cooler, blue-shifted felt; slate rail */
+.ts--venue-tournament {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 3px
+    ),
+    radial-gradient(
+      ellipse at 50% 42%,
+      #2a6070 0%,
+      #1e4a58 22%,
+      #163845 44%,
+      #0e2830 66%,
+      #091d24 100%
+    );
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.78),
+    0  6px 20px rgba(0, 0, 0, 0.52),
+    0  0   0 16px #223a4a,
+    0  0   0 28px #101e2a,
+    0  0   0 29px #5b8ec9,
+    0  0   0 32px #080e16,
+    inset 0 3px 8px  rgba(255, 255, 255, 0.05),
+    inset 0 0   80px rgba(0, 0, 0, 0.35);
+}
+
+/* ================================================================
+   Responsive — mobile ≤640px
+   Tighten everything; pods must not overflow the viewport.
+   ================================================================ */
+@media (max-width: 640px) {
+  .ts-wrap {
+    padding: 4rem var(--space-2) 5.5rem;
+    max-width: 100%;
+  }
+
+  .ts {
+    /* Taller aspect ratio prevents side seats from going off-screen */
+    aspect-ratio: 1.45 / 1;
+  }
+
+  /* Reduce seat overhang so pods stay within viewport */
+
+  /* Top seats: less negative top */
+  .ts--2 .ts-seat:nth-child(1),
+  .ts--3 .ts-seat:nth-child(1),
+  .ts--3 .ts-seat:nth-child(2),
+  .ts--4 .ts-seat:nth-child(1),
+  .ts--5 .ts-seat:nth-child(1),
+  .ts--5 .ts-seat:nth-child(2),
+  .ts--6 .ts-seat:nth-child(1),
+  .ts--6 .ts-seat:nth-child(2) {
+    top: -12%;
+  }
+
+  /* Hero seat: less negative bottom */
+  .ts--2 .ts-seat:nth-child(2),
+  .ts--3 .ts-seat:nth-child(3),
+  .ts--4 .ts-seat:nth-child(4),
+  .ts--5 .ts-seat:nth-child(5),
+  .ts--6 .ts-seat:nth-child(6) {
+    bottom: -12%;
+  }
+
+  /* 6-player: bottom side seats also less negative */
+  .ts--6 .ts-seat:nth-child(4),
+  .ts--6 .ts-seat:nth-child(5) {
+    bottom: -12%;
+  }
+
+  /* Side seats: pull inward */
+  .ts--4 .ts-seat:nth-child(2),
+  .ts--5 .ts-seat:nth-child(4),
+  .ts--6 .ts-seat:nth-child(6) {
+    left: -2%;
+  }
+
+  .ts--4 .ts-seat:nth-child(3),
+  .ts--5 .ts-seat:nth-child(3),
+  .ts--6 .ts-seat:nth-child(3) {
+    right: -2%;
+  }
+
+  /* Board cards: slightly smaller gap on narrow screens */
+  .ts-board {
+    gap: 2px;
+  }
+
+  /* Pot amount: slightly smaller */
+  .ts-pot__amount {
+    font-size: var(--text-sm, 0.875rem);
+  }
+
+  /* Ticker: narrower */
+  .ts-ticker {
+    max-width: 160px;
+  }
+
+  /* Dealer button: slightly smaller */
+  .ts-dealer {
+    width: 22px;
+    height: 22px;
+  }
+
+  .ts-dealer__label {
+    font-size: 0.5rem;
+  }
+
+  /* Betting line: same inset works fine on narrower oval */
+}
+
+/* ≤380px: smallest phones */
+@media (max-width: 380px) {
+  .ts-wrap {
+    padding: 3.5rem var(--space-1) 5rem;
+  }
+
+  .ts {
+    aspect-ratio: 1.3 / 1;
+  }
+
+  .ts--2 .ts-seat:nth-child(1),
+  .ts--3 .ts-seat:nth-child(1),
+  .ts--3 .ts-seat:nth-child(2),
+  .ts--4 .ts-seat:nth-child(1),
+  .ts--5 .ts-seat:nth-child(1),
+  .ts--5 .ts-seat:nth-child(2),
+  .ts--6 .ts-seat:nth-child(1),
+  .ts--6 .ts-seat:nth-child(2) {
+    top: -9%;
+  }
+
+  .ts--2 .ts-seat:nth-child(2),
+  .ts--3 .ts-seat:nth-child(3),
+  .ts--4 .ts-seat:nth-child(4),
+  .ts--5 .ts-seat:nth-child(5),
+  .ts--6 .ts-seat:nth-child(6) {
+    bottom: -9%;
+  }
+
+  .ts--6 .ts-seat:nth-child(4),
+  .ts--6 .ts-seat:nth-child(5) {
+    bottom: -9%;
+  }
+
+  .ts--4 .ts-seat:nth-child(2),
+  .ts--5 .ts-seat:nth-child(4),
+  .ts--6 .ts-seat:nth-child(6) {
+    left: 0%;
+  }
+
+  .ts--4 .ts-seat:nth-child(3),
+  .ts--5 .ts-seat:nth-child(3),
+  .ts--6 .ts-seat:nth-child(3) {
+    right: 0%;
+  }
+}
+
+/* ================================================================
+   Reduced motion — neutralize all TableSurface animations
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .ts-seat,
+  .ts-pot,
+  .ts-pot.anim-chips,
+  .ts-ticker__text {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,574 @@
+/* ============================================================
+   PlayerPod — Broadcast "lower-third" nameplate
+   ============================================================
+   Architecture:
+     .pp-wrapper          — outer stack (cards above + bar + bet below)
+     .pp-cards            — hole cards floating above the bar
+     .pp                  — the main glass bar (flex row)
+       .pp-avatar-zone    — left: avatar + optional timer arc overlay
+       .pp-identity       — center: flag, position label, NAME, behaviour
+       .pp-stack-zone     — right: stack count or ALL IN pill
+     .pp-bet-zone         — below bar: bet chip graphic
+
+   State modifiers on .pp:
+     .pp--active          gold border + glow + timer arc visible
+     .pp--folded          desaturated + reduced opacity + greyed cards
+     .pp--allin           AllInPill shown; red pulse tint
+     .pp--hero            distinct gold seat treatment
+
+   Motion: GPU-only (transform + opacity). prefers-reduced-motion compliant.
+   ============================================================ */
+
+/* ── Outer wrapper (stacks cards / bar / bet chip vertically) ── */
+.pp-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  position: relative;
+  width: fit-content;
+}
+
+/* ── Hole cards ──────────────────────────────────────────────── */
+.pp-cards {
+  display: flex;
+  gap: 3px;
+  padding-left: 8px;   /* align roughly with avatar center */
+  /* Slight overlap effect — cards fan down into the bar */
+  margin-bottom: -6px;
+  z-index: 1;
+  position: relative;
+}
+
+/* When folded: desaturate and dim the cards */
+.pp--folded ~ .pp-cards,
+.pp-wrapper:has(.pp--folded) .pp-cards {
+  filter: grayscale(0.85) brightness(0.55);
+  opacity: 0.5;
+}
+
+/* ── Main bar ────────────────────────────────────────────────── */
+.pp {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+
+  min-width: 220px;
+  height: 56px;
+
+  /*
+   * Glass lower-third bar:
+   *   — Deep glass base: #080c12 at 92% opacity
+   *   — Thin top-edge highlight seam (top-lit glass)
+   *   — Chamfered 4px corners
+   *   — Left gold accent stripe via border-left
+   */
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.035) 0%,
+      transparent 55%
+    ),
+    rgba(8, 12, 18, 0.92);
+
+  border-radius: var(--radius-xs, 4px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--gold-dim, #9a7a2e);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);   /* top-lit seam */
+
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  /* Transitions — only opacity + box-shadow (compositor or cheap) */
+  transition:
+    opacity var(--dur-base, 220ms) var(--ease-out, ease),
+    border-color var(--dur-base, 220ms) var(--ease-out, ease),
+    box-shadow var(--dur-base, 220ms) var(--ease-out, ease);
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  will-change: opacity;
+}
+
+/* ── Active state ────────────────────────────────────────────── */
+.pp--active {
+  border-color: var(--gold, #c8a03c);
+  border-left-color: var(--gold, #c8a03c);
+
+  box-shadow:
+    0 0 0 1px rgba(200, 160, 60, 0.55),       /* crisp gold outer ring */
+    0 0 16px rgba(200, 160, 60, 0.30),         /* ambient gold glow    */
+    0 4px 16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 230, 100, 0.08);
+}
+
+/* ── Folded state ────────────────────────────────────────────── */
+.pp--folded {
+  opacity: 0.4;
+  filter: saturate(0.2) brightness(0.75);
+  border-left-color: rgba(100, 100, 100, 0.4);
+  pointer-events: none;
+}
+
+/* ── All-in state — subtle red tint ─────────────────────────── */
+.pp--allin {
+  border-left-color: var(--red-dim, #a83d4e);
+  box-shadow:
+    0 0 12px rgba(217, 79, 99, 0.18),
+    0 4px 16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ── Hero state — brighter left stripe ──────────────────────── */
+.pp--hero {
+  border-left-color: var(--gold-light, #ddb94e);
+  border-left-width: 4px;
+}
+
+/* ── Avatar zone ─────────────────────────────────────────────── */
+.pp-avatar-zone {
+  flex-shrink: 0;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Timer arc — absolutely centered over the avatar */
+.pp-timer-arc {
+  position: absolute;
+  inset: -5px;  /* arc sits slightly outside the 44px avatar box */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Avatars ──────────────────────────────────────────────────── */
+.pp-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* ── Pro avatar ── */
+.pp-avatar--pro {
+  /* Multi-layer gold ring matching PlayerAvatar medallion aesthetic */
+  box-shadow:
+    0 0 0 2px rgba(200, 160, 60, 0.90),
+    0 0 0 4px rgba(200, 160, 60, 0.18),
+    0 0 12px rgba(200, 160, 60, 0.28),
+    0 3px 10px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 230, 130, 0.20);
+
+  background:
+    radial-gradient(
+      ellipse at 38% 28%,
+      #2b3a52 0%,
+      #1a2438 20%,
+      #101620 44%,
+      #090d14 100%
+    );
+}
+
+.pp-avatar__portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.pp-avatar__initials {
+  font-family: var(--font-body, 'Georgia', serif);
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: #d4a843;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 1px 0 rgba(255, 240, 160, 0.28),
+    0 2px 5px rgba(0, 0, 0, 0.85);
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sheen sweep — decorative gloss on pro avatar */
+.pp-avatar__sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 230, 130, 0.10) 45%,
+    rgba(255, 230, 130, 0.05) 55%,
+    transparent 80%
+  );
+  pointer-events: none;
+}
+
+/* ── Hero avatar ── */
+.pp-avatar--hero {
+  background:
+    radial-gradient(
+      ellipse at 50% 35%,
+      rgba(200, 160, 60, 0.12) 0%,
+      rgba(8, 12, 18, 0.90) 65%
+    );
+
+  box-shadow:
+    0 0 0 2px rgba(200, 160, 60, 0.75),
+    0 0 0 3px rgba(200, 160, 60, 0.14),
+    0 0 14px rgba(200, 160, 60, 0.22),
+    inset 0 1px 0 rgba(255, 220, 100, 0.12);
+
+  /* Subtle pulsing ring via ::before — GPU safe */
+  isolation: isolate;
+}
+
+.pp-avatar--hero::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid rgba(200, 160, 60, 0.40);
+  pointer-events: none;
+  animation: pulse-subtle 2.4s var(--ease-out, ease) infinite;
+  will-change: opacity, transform;
+}
+
+.pp-avatar__you {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--gold, #c8a03c);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Regular (silhouette) avatar ── */
+.pp-avatar--regular {
+  background: hsl(var(--seat-hue, 220), 18%, 12%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ── Silhouette SVG ── */
+.pp-silhouette {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+.pp-silhouette__fill {
+  fill: hsl(var(--silhouette-hue, 220), 14%, 38%);
+}
+
+/* ── Identity block ──────────────────────────────────────────── */
+.pp-identity {
+  flex: 1;
+  min-width: 0;  /* allow text truncation */
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+/* Top row: flag + position chip */
+.pp-identity__top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pp-flag {
+  font-size: 0.78rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.pp-position {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--gold, #c8a03c);
+  background: rgba(200, 160, 60, 0.10);
+  border: 1px solid rgba(200, 160, 60, 0.22);
+  border-radius: var(--radius-xs, 4px);
+  padding: 1px 5px;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+/* Player NAME — bold white all-caps letter-spaced */
+.pp-name {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-primary, #f0ece4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+/* Hero name gets gold accent */
+.pp--hero .pp-name {
+  color: var(--gold-light, #ddb94e);
+}
+
+/* Playing style descriptor */
+.pp-behaviour {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.58rem;
+  font-style: italic;
+  color: var(--text-dim, #6a6560);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Stack zone ──────────────────────────────────────────────── */
+.pp-stack-zone {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 72px;
+}
+
+/* Stack count — gold tabular monospace, big */
+.pp-stack {
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-size: 1.00rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold, #c8a03c);
+  text-shadow:
+    0 1px 0 rgba(255, 220, 80, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.80);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ── ALL IN pill ──────────────────────────────────────────────── */
+.pp-allin-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-full, 9999px);
+  background: linear-gradient(
+    135deg,
+    rgba(217, 79, 99, 0.90) 0%,
+    rgba(168, 61, 78, 0.95) 100%
+  );
+  border: 1px solid rgba(217, 79, 99, 0.60);
+  box-shadow:
+    0 0 10px rgba(217, 79, 99, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 150, 165, 0.20);
+
+  /* Pulsing glow via position:relative + ::before */
+  position: relative;
+  isolation: isolate;
+}
+
+.pp-allin-pill::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid rgba(217, 79, 99, 0.50);
+  pointer-events: none;
+  animation: pulse-subtle 1.6s var(--ease-out, ease) infinite;
+  will-change: opacity, transform;
+}
+
+.pp-allin-pill span {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.60rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Bet chip ─────────────────────────────────────────────────── */
+.pp-bet-zone {
+  padding-left: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.pp-bet-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+
+  /* Casino chip concentric ring look */
+  background:
+    radial-gradient(
+      ellipse at 40% 30%,
+      rgba(255, 220, 80, 0.18) 0%,
+      rgba(200, 160, 60, 0.04) 45%,
+      transparent 70%
+    ),
+    rgba(12, 16, 22, 0.95);
+
+  border: 2px solid var(--gold, #c8a03c);
+  outline: 1px solid rgba(200, 160, 60, 0.15);
+  outline-offset: 3px;
+
+  box-shadow:
+    0 0 12px rgba(200, 160, 60, 0.30),
+    0 3px 8px rgba(0, 0, 0, 0.70),
+    inset 0 1px 0 rgba(255, 230, 100, 0.12);
+
+  position: relative;
+  flex-shrink: 0;
+  animation: chips-to-pot var(--dur-base, 220ms) var(--ease-out, ease) both;
+}
+
+.pp-bet-chip__amount {
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold, #c8a03c);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-align: center;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  position: relative;
+  z-index: 1;
+  max-width: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .pp,
+  .pp-bet-chip {
+    transition: none;
+    animation: none;
+  }
+
+  .pp-avatar--hero::before,
+  .pp-allin-pill::before {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+
+/* ≤ 640px tablets / large phones */
+@media (max-width: 640px) {
+  .pp {
+    min-width: 180px;
+    height: 50px;
+    padding: 5px 10px 5px 5px;
+    gap: 8px;
+  }
+
+  .pp-avatar-zone {
+    width: 38px;
+    height: 38px;
+  }
+
+  .pp-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .pp-silhouette {
+    width: 30px;
+    height: 30px;
+  }
+
+  .pp-name {
+    font-size: 0.76rem;
+  }
+
+  .pp-stack {
+    font-size: 0.86rem;
+  }
+
+  .pp-stack-zone {
+    min-width: 60px;
+  }
+}
+
+/* ≤ 380px smallest phones */
+@media (max-width: 380px) {
+  .pp {
+    min-width: 160px;
+    height: 44px;
+    padding: 4px 8px 4px 4px;
+    gap: 6px;
+  }
+
+  .pp-avatar-zone {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pp-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pp-name {
+    font-size: 0.68rem;
+  }
+
+  .pp-stack {
+    font-size: 0.76rem;
+  }
+
+  .pp-stack-zone {
+    min-width: 52px;
+  }
+
+  .pp-bet-chip {
+    width: 38px;
+    height: 38px;
+  }
+
+  .pp-bet-chip__amount {
+    font-size: 0.48rem;
+    max-width: 32px;
+  }
+}

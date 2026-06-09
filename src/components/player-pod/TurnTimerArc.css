@@ -1,0 +1,27 @@
+/* ============================================================
+   TurnTimerArc — SVG countdown ring
+   ============================================================ */
+
+.tta {
+  display: block;
+  flex-shrink: 0;
+  /* Pointer events off — it's decorative */
+  pointer-events: none;
+}
+
+/* Dim track ring */
+.tta__track {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+/* Arc segment — color/dashoffset controlled via inline style from JS */
+.tta__arc {
+  will-change: stroke-dashoffset, stroke;
+}
+
+/* Reduced motion: snap immediately, no smooth depletion */
+@media (prefers-reduced-motion: reduce) {
+  .tta__arc {
+    transition: none !important;
+  }
+}
