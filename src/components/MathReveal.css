@@ -19,7 +19,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-6) var(--space-4);
-  animation: verdict-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: verdict-pop var(--dur-dramatic) cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .verdict__icon {
@@ -60,6 +60,182 @@
   max-width: 500px;
 }
 
+/* ============================================================
+   Beat Card — You / The Pro / GTO comparison table (V2 only)
+   ============================================================ */
+
+.math-reveal__beat-card {
+  position: relative;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  animation: slide-up var(--dur-slow) var(--ease-out) both;
+}
+
+/* Celebratory variant — "you out-played the pro" */
+.math-reveal__beat-card--outplayed {
+  border-color: var(--gold-border);
+  box-shadow: 0 0 0 1px rgba(200, 160, 60, 0.15),
+              var(--glow-gold);
+  animation: slide-up var(--dur-slow) var(--ease-out) both,
+             pulse-glow var(--dur-dramatic) var(--ease-out) 1 forwards;
+}
+
+/* Shimmer sweep on the outplayed card */
+.math-reveal__beat-card--outplayed::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gold-sheen);
+  opacity: 0.06;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* --- Beat card header (badge row) --- */
+.beat-card__header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+/* Base badge style */
+.beat-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* Gold — "You out-played the pro" (celebratory) */
+.beat-card__badge--gold {
+  background: var(--gold-bg);
+  color: var(--gold-light);
+  border: 1px solid var(--gold-border);
+  box-shadow: var(--glow-gold);
+  font-size: var(--text-sm);          /* bigger — most important state */
+  padding: var(--space-2) var(--space-5);
+  animation: verdict-pop var(--dur-dramatic) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 80ms;
+}
+
+/* Amber — "Same mistake as the pro" */
+.beat-card__badge--amber {
+  background: rgba(192, 124, 48, 0.12);
+  color: #e09a50;
+  border: 1px solid rgba(192, 124, 48, 0.30);
+  animation: verdict-pop var(--dur-slow) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Green — "You and the pro agreed" */
+.beat-card__badge--green {
+  background: var(--green-bg);
+  color: var(--green-light);
+  border: 1px solid var(--green-border);
+  animation: verdict-pop var(--dur-slow) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Neutral — "Pro got it right" */
+.beat-card__badge--neutral {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  animation: verdict-pop var(--dur-slow) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* --- Beat card rows (comparison table) --- */
+.beat-card__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.beat-card__row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 2.5rem;
+}
+
+.beat-card__row:last-child {
+  border-bottom: none;
+}
+
+/* Alternating row tint */
+.beat-card__row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+/* Row label (You / The Pro / GTO Verdict) */
+.beat-card__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Action chip inside each row */
+.beat-card__action {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.03em;
+  text-transform: capitalize;
+}
+
+/* Correct action — green */
+.beat-card__action--correct {
+  color: var(--green-light);
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+}
+
+/* Incorrect action — red */
+.beat-card__action--incorrect {
+  color: var(--red-light);
+  background: var(--red-bg);
+  border: 1px solid var(--red-border);
+}
+
+/* GTO action — gold (canonical correct play) */
+.beat-card__action--gto {
+  color: var(--gold-light);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-border);
+}
+
+/* Pro reasoning note — runs inline after The Pro's action */
+.beat-card__pro-reasoning {
+  display: block;
+  grid-column: 2;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: var(--space-1);
+  line-height: 1.4;
+}
+
 /* --- Insight block --- */
 .math-reveal__insight {
   padding: var(--space-4);
@@ -70,7 +246,7 @@
   font-size: var(--text-base);
   color: var(--text-secondary);
   line-height: 1.7;
-  animation: slide-up 0.35s ease-out both;
+  animation: slide-up var(--dur-slow) var(--ease-out) both;
 }
 
 /* --- Math steps container --- */
@@ -101,7 +277,7 @@
   background: var(--bg-surface);
   border-radius: var(--radius-sm);
   border-left: 3px solid transparent;
-  animation: step-reveal 0.3s ease-out both;
+  animation: step-reveal var(--dur-base) var(--ease-out) both;
 }
 
 /* Step status colors */
@@ -186,7 +362,7 @@
   background: linear-gradient(135deg, var(--bg-surface-elevated), var(--bg-surface));
   border-radius: var(--radius-lg);
   border: 1px solid var(--gold-border);
-  animation: slide-up 0.4s ease-out both;
+  animation: slide-up var(--dur-slow) var(--ease-out) both;
 }
 
 .takeaway__header {
@@ -226,7 +402,7 @@
   border-radius: var(--radius-full);
   background: linear-gradient(90deg, var(--green), var(--green-light));
   transform-origin: left center;
-  transition: transform 1s ease-out;
+  transition: transform 1s var(--ease-out);
 }
 
 /* --- Desktop: tighter spacing in right column --- */
@@ -273,6 +449,24 @@
   .math-reveal__takeaway {
     padding: var(--space-3);
   }
+
+  .math-reveal__beat-card {
+    padding: var(--space-4) var(--space-4) var(--space-3);
+  }
+
+  .beat-card__row {
+    grid-template-columns: 80px 1fr;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .beat-card__badge {
+    font-size: calc(var(--text-xs) * 0.9);
+  }
+
+  .beat-card__badge--gold {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-4);
+  }
 }
 
 /* --- Responsive (small screens) --- */
@@ -300,5 +494,16 @@
 
   .math-step__value {
     text-align: left;
+  }
+
+  .beat-card__row {
+    grid-template-columns: 72px 1fr;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .beat-card__badge--gold {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-3);
   }
 }

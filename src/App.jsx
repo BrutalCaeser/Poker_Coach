@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react';
 import ScenarioMenu from './components/ScenarioMenu.jsx';
 import ScenarioPlay from './components/ScenarioPlay.jsx';
-import { scenarios, getScenarioById } from './scenarios/index.js';
+import { scenarios, allScenarios, getScenarioById } from './scenarios/index.js';
 import { loadStats, recordResult as recordStatResult } from './userStats.js';
 import './App.css';
 
@@ -41,11 +41,13 @@ export default function App() {
   const { route, navigate } = useRouter();
   const { stats, recordResult } = useUserStats();
 
-  // Find next scenario for "Next Hand" button
+  // Find next scenario for "Next Hand" button.
+  // Fix 5: use allScenarios (curated + real hands) so real-hand scenarios can
+  // navigate forward instead of falling back to home.
   const getNextScenarioId = useCallback((currentId) => {
-    const idx = scenarios.findIndex((s) => s.id === currentId);
-    if (idx === -1 || idx === scenarios.length - 1) return null;
-    return scenarios[idx + 1].id;
+    const idx = allScenarios.findIndex((s) => s.id === currentId);
+    if (idx === -1 || idx === allScenarios.length - 1) return null;
+    return allScenarios[idx + 1].id;
   }, []);
 
   // Route: Home
@@ -53,7 +55,7 @@ export default function App() {
     return (
       <div className="page-transition">
         <ScenarioMenu
-          scenarios={scenarios}
+          scenarios={allScenarios}
           userStats={stats}
           onSelectScenario={(id) => navigate('play', { id })}
           onFreePlay={() => navigate('free-play')}

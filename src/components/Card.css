@@ -191,7 +191,8 @@
 /* Hero (lg) — more presence: gold-tinted glow on hover */
 .card--lg.card--face-up:hover {
   transform: translateY(-3px);
-  filter: drop-shadow(0 0 8px rgba(200, 160, 60, 0.25));
+  /* gold glow via box-shadow (GPU-friendlier than filter on a transformed layer) */
+  box-shadow: var(--shadow-3), 0 0 14px rgba(200, 160, 60, 0.28);
 }
 
 /* Face-down hover: very subtle lift */

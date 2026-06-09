@@ -169,7 +169,7 @@
 }
 
 .eb-verdict-text--fail {
-  color: var(--gold);  /* amber — not catastrophic red; red is only for errors */
+  color: #c07c30;  /* muted amber — "short of the price"; gold is reserved for pro/premium */
 }
 
 /* ── Subtitle ─────────────────────────────────────────────── */

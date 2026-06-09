@@ -1,0 +1,483 @@
+/* ============================================================
+   PlayerAvatar — Casino-Luxury Avatar System
+   ============================================================
+   Three tiers:
+     .pa--pro      Gold medallion portrait with PRO badge
+     .pa--hero     "YOU" seat with gold ring shimmer
+     .pa--regular  Compact initials chip
+
+   Motion: transform + opacity ONLY (GPU composited).
+   Respects prefers-reduced-motion.
+   ============================================================ */
+
+/* ── Base container ────────────────────────────────────────── */
+.pa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  position: relative;
+}
+
+/* ================================================================
+   PRO SEAT — Gold medallion portrait
+   ================================================================
+   Stack (top to bottom):
+     1. pa-medallion   — circular frame, gold ring, sheen sweep
+     2. pa-pro-badge   — "PRO" pill floating above/overlapping ring
+     3. pa-flag        — tiny country flag emoji
+     4. pa-name        — player name in gold
+     5. pa-descriptor  — style descriptor in muted italic
+   ================================================================ */
+
+/* ── Medallion ring ─────────────────────────────────────────── */
+.pa-medallion {
+  position: relative;
+  /* Desktop: 72px base */
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden; /* portrait clips to circle */
+
+  /*
+   * Gold ring system (outermost → innermost):
+   *   1. Outer ambient glow halo
+   *   2. Mid gold ring — the main border
+   *   3. Thin bright inner highlight seam (top-lit)
+   *   4. Depth shadow
+   *   5. Inset inner edge highlight for 3-D depth
+   */
+  box-shadow:
+    0 0 0 3px rgba(200, 160, 60, 0.95),        /* main gold ring */
+    0 0 0 5px rgba(200, 160, 60, 0.22),        /* soft outer halo */
+    0 0 0 6px rgba(120, 90, 20, 0.40),         /* dark outer lip */
+    0 0 18px rgba(200, 160, 60, 0.35),         /* ambient gold glow */
+    0 6px 20px rgba(0, 0, 0, 0.70),            /* depth shadow */
+    inset 0 2px 0 rgba(255, 235, 140, 0.28),   /* top-lit inner seam */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.40);        /* bottom inner shadow */
+
+  /* GPU hint */
+  will-change: transform, opacity;
+  transition:
+    transform var(--dur-fast, 120ms) var(--ease-out, ease),
+    box-shadow var(--dur-fast, 120ms) var(--ease-out, ease);
+}
+
+/* Hover: ring brightens, slight lift */
+.pa--pro:hover .pa-medallion,
+.pa--pro:focus-within .pa-medallion {
+  box-shadow:
+    0 0 0 3px rgba(240, 210, 110, 1.00),       /* bright gold ring */
+    0 0 0 5px rgba(200, 160, 60, 0.38),
+    0 0 0 7px rgba(120, 90, 20, 0.35),
+    0 0 26px rgba(200, 160, 60, 0.55),
+    0 8px 24px rgba(0, 0, 0, 0.75),
+    inset 0 2px 0 rgba(255, 245, 170, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  transform: translateY(-3px);
+}
+
+/* ── Portrait image (when asset exists) ─────────────────────── */
+.pa-medallion__portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+/* ── Monogram disk (generated portrait fallback) ─────────────── */
+.pa-disk {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /*
+   * Premium multi-stop dark gradient:
+   *   — A warm gold tint near the top-left light source
+   *   — Deep navy mid-zone
+   *   — Near-black rim with a slight warm cast
+   * Looks like a luxury coin or casino chip face.
+   */
+  background:
+    radial-gradient(
+      ellipse at 38% 28%,
+      #2b3a52 0%,
+      #1a2438 18%,
+      #101620 42%,
+      #0d1219 65%,
+      #090d14 82%,
+      #060910 100%
+    );
+}
+
+/* Inner-top highlight — warm top-light on the disk surface */
+.pa-disk::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse at 42% 18%,
+      rgba(255, 220, 120, 0.11) 0%,
+      rgba(255, 200, 80, 0.04) 35%,
+      transparent 60%
+    );
+  pointer-events: none;
+}
+
+/* Inner-bottom shadow for depth / curvature */
+.pa-disk::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 85%,
+    rgba(0, 0, 0, 0.30) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+/* Monogram initials — elegant serif gold, scaled to disk size */
+.pa-disk__initials {
+  font-family: var(--font-body, 'Georgia', 'Times New Roman', serif);
+  font-size: 1.45rem;      /* scales well at 72px disk */
+  font-weight: 400;        /* serif at normal weight reads more premium than bold */
+  font-style: normal;
+  color: #d4a843;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 1px 0 rgba(255, 240, 160, 0.30),   /* top highlight */
+    0 2px 6px rgba(0, 0, 0, 0.85);       /* depth shadow */
+  line-height: 1;
+  position: relative; /* above ::before / ::after */
+  z-index: 1;
+}
+
+/* ── Sheen sweep overlay on medallion ───────────────────────── */
+/*
+ * A diagonal light-band that slowly moves across the medallion surface
+ * on hover — purely via transform (GPU safe). Overflow is hidden on the
+ * parent so it stays clipped to the circle.
+ */
+.pa-medallion__sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 235, 150, 0.12) 45%,
+    rgba(255, 235, 150, 0.06) 55%,
+    transparent 80%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-60%) skewX(-15deg);
+  transition:
+    opacity  var(--dur-base, 220ms) var(--ease-out, ease),
+    transform var(--dur-base, 220ms) var(--ease-out, ease);
+  will-change: transform, opacity;
+}
+
+.pa--pro:hover .pa-medallion__sheen,
+.pa--pro:focus-within .pa-medallion__sheen {
+  opacity: 1;
+  transform: translateX(60%) skewX(-15deg);
+}
+
+/* ── PRO badge ──────────────────────────────────────────────── */
+/*
+ * Floats above the ring at top-right, overlapping slightly.
+ * Gold-sheen gradient pill — richer multi-stop for a premium coin feel.
+ * Includes a bright inline highlight seam to read as backlit gold.
+ */
+.pa-pro-badge {
+  position: absolute;
+  top: 2px;
+  right: -6px;
+  padding: 2px 7px;
+  border-radius: var(--radius-full, 9999px);
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0a0d12;
+  line-height: 1.5;
+
+  /* Multi-stop gold sheen — light at top, richer mid, darker base */
+  background: linear-gradient(
+    160deg,
+    #f0d878 0%,
+    #e0ba50 25%,
+    #c8a03c 55%,
+    #a8841e 80%,
+    #8a6a10 100%
+  );
+
+  box-shadow:
+    0 1px 5px rgba(0, 0, 0, 0.65),
+    0 0 10px rgba(200, 160, 60, 0.50),
+    inset 0 1px 0 rgba(255, 248, 190, 0.55);   /* bright top seam */
+
+  z-index: 2;
+}
+
+/* ── Country flag ───────────────────────────────────────────── */
+.pa-flag {
+  font-size: 0.75rem;
+  line-height: 1;
+  /* visually sits between medallion and name */
+  margin-top: 1px;
+}
+
+/* ── Name (pro tier) ────────────────────────────────────────── */
+.pa-name--pro {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--gold, #c8a03c);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+/* ── Style descriptor ───────────────────────────────────────── */
+.pa-descriptor {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.62rem;
+  font-style: italic;
+  color: var(--text-muted, #9a9590);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-align: center;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Era / event sub-label ──────────────────────────────────── */
+/*
+ * Tiny muted label below the descriptor — identifies the event/year
+ * (e.g. "2003 WSOP Main Event"). Anchors the pro's identity in history.
+ */
+.pa-era {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.54rem;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--text-dim, #6b675f);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-align: center;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+/* ================================================================
+   HERO SEAT — "YOU" treatment
+   ================================================================ */
+
+.pa-hero__ring {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  /*
+   * Hero ring: gold border + dark centre with subtle warm tint.
+   * No sheen-sweep motion — keep the hero seat calm and distinctive.
+   */
+  background:
+    radial-gradient(
+      ellipse at 50% 35%,
+      rgba(200, 160, 60, 0.10) 0%,
+      rgba(10, 14, 20, 0.88) 60%
+    );
+
+  box-shadow:
+    0 0 0 2px rgba(200, 160, 60, 0.70),
+    0 0 0 3px rgba(200, 160, 60, 0.15),
+    0 0 16px rgba(200, 160, 60, 0.20),
+    inset 0 1px 0 rgba(255, 220, 100, 0.12);
+
+  /* Subtle pulsing ring — uses opacity on ::before, GPU safe */
+  isolation: isolate;
+}
+
+/* Pulsing gold halo behind the ring */
+.pa-hero__ring::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid rgba(200, 160, 60, 0.45);
+  pointer-events: none;
+  animation: pulse-subtle 2.4s var(--ease-out, ease) infinite;
+  will-change: opacity, transform;
+}
+
+.pa-hero__you {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold, #c8a03c);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* ================================================================
+   REGULAR OPPONENT — compact initials chip
+   ================================================================ */
+
+.pa-initials-chip {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary, #c4bfb6);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.00) 100%
+    ),
+    rgba(10, 14, 20, 0.82);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.50),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ================================================================
+   Responsive — scale medallion + supporting text on narrow screens
+   ================================================================ */
+
+/* ≤ 640px: tablets / large phones */
+@media (max-width: 640px) {
+  .pa-medallion {
+    width: 56px;
+    height: 56px;
+  }
+
+  .pa-disk__initials {
+    font-size: 1.15rem;
+  }
+
+  .pa-hero__ring {
+    width: 46px;
+    height: 46px;
+  }
+
+  .pa-initials-chip {
+    width: 30px;
+    height: 30px;
+    font-size: 0.60rem;
+  }
+
+  .pa-name--pro {
+    font-size: 0.68rem;
+  }
+
+  .pa-descriptor {
+    font-size: 0.57rem;
+    max-width: 72px;
+  }
+
+  .pa-era {
+    font-size: 0.49rem;
+    max-width: 72px;
+  }
+
+  .pa-pro-badge {
+    font-size: 0.50rem;
+    padding: 1px 6px;
+    top: 1px;
+    right: -5px;
+  }
+}
+
+/* ≤ 380px: smallest phones */
+@media (max-width: 380px) {
+  .pa-medallion {
+    width: 44px;
+    height: 44px;
+  }
+
+  .pa-disk__initials {
+    font-size: 0.92rem;
+  }
+
+  .pa-hero__ring {
+    width: 38px;
+    height: 38px;
+  }
+
+  .pa-initials-chip {
+    width: 26px;
+    height: 26px;
+    font-size: 0.55rem;
+  }
+
+  .pa-name--pro {
+    font-size: 0.60rem;
+  }
+
+  .pa-descriptor {
+    font-size: 0.50rem;
+    max-width: 60px;
+  }
+
+  .pa-era {
+    font-size: 0.44rem;
+    max-width: 60px;
+  }
+
+  .pa-pro-badge {
+    font-size: 0.46rem;
+    padding: 1px 5px;
+  }
+}
+
+/* ================================================================
+   Reduced motion — keep layout, kill all motion
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .pa-medallion,
+  .pa-medallion__sheen,
+  .pa-hero__ring::before {
+    transition: none;
+    animation: none;
+  }
+
+  .pa--pro:hover .pa-medallion,
+  .pa--pro:focus-within .pa-medallion {
+    transform: none;
+  }
+
+  .pa-hero__ring::before {
+    opacity: 0; /* hide the pulsing ring entirely */
+  }
+}

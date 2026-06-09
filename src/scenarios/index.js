@@ -964,11 +964,11 @@ const scenario15 = {
 };
 
 // ---------------------------------------------------------------------------
-// EXPORT
+// EXPORT — curated (v1) scenarios
 // ---------------------------------------------------------------------------
 
 /**
- * All 15 scenarios in order of difficulty and sequence.
+ * All 15 curated training scenarios in order of difficulty and sequence.
  */
 export const scenarios = [
   // Beginner (difficulty: 1)
@@ -991,13 +991,36 @@ export const scenarios = [
   scenario15,
 ];
 
+// ---------------------------------------------------------------------------
+// Real-hand (v2) scenarios
+// ---------------------------------------------------------------------------
+// Import from the real-hands registry. That file exports `realHandScenarios`
+// as an array; it guards its own internal imports so the app/tests never crash
+// when a hand file hasn't been authored yet.
+// ---------------------------------------------------------------------------
+
+import { realHandScenarios as _realHandScenarios } from './real/index.js';
+
+/**
+ * Real-hand (Ghost Seat) scenarios. Populated as hand files are authored.
+ * @type {Object[]}
+ */
+export const realHandScenarios = _realHandScenarios;
+
+/**
+ * All scenarios combined — curated + real-hand.
+ * @type {Object[]}
+ */
+export const allScenarios = [...scenarios, ...realHandScenarios];
+
 /**
  * Look up a scenario by its unique id string.
+ * Searches both curated and real-hand scenario pools.
  * @param {string} id - The scenario id (e.g., "first-pot-odds")
  * @returns {Object|undefined} The matching scenario, or undefined if not found.
  */
 export function getScenarioById(id) {
-  return scenarios.find((s) => s.id === id);
+  return allScenarios.find((s) => s.id === id);
 }
 
 export default scenarios;

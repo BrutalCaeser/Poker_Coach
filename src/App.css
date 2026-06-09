@@ -6,5 +6,5 @@
 
 /* Page transitions */
 .page-transition {
-  animation: fade-in var(--transition-normal) ease-out;
+  animation: fade-in var(--dur-base) var(--ease-out);
 }

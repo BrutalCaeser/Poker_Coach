@@ -2,16 +2,23 @@
  * DecisionPrompt Component
  * ========================
  * The critical decision UI. Shows pot amount, call amount, hero stack.
- * Renders CALL (green), FOLD (red), and optionally RAISE (gold) buttons.
+ * Renders buttons driven by the options array:
+ *   - 'check' → Check button (gold/neutral, passive)
+ *   - 'call'  → Call button (green) showing callAmount
+ *   - 'fold'  → Fold button (red, recessive)
+ *   - 'bet'   → Bet button (gold-sheen, aggressive) showing betAmount ?? raiseAmount
+ *   - 'raise' → Raise button (gold-sheen, aggressive) showing raiseAmount
+ * Passive actions render left, aggressive actions right.
  * Buttons feel large, weighty, tactile. On click, emits the user's decision.
  *
  * @param {Object}   props
- * @param {number}   props.pot        - Total pot size
- * @param {number}   props.callAmount - Amount required to call
- * @param {number}   props.heroStack  - Hero's remaining stack
- * @param {string[]} props.options    - Available actions: ["call","fold"] or ["call","fold","raise"]
+ * @param {number}   props.pot          - Total pot size
+ * @param {number}   props.callAmount   - Amount required to call
+ * @param {number}   props.heroStack    - Hero's remaining stack
+ * @param {string[]} props.options      - Available actions (any subset of check/call/fold/bet/raise)
  * @param {number}   [props.raiseAmount] - Amount to raise to (if raise is an option)
- * @param {Function} props.onDecision - Callback: (action) => void
+ * @param {number}   [props.betAmount]  - Amount to bet (if bet is an option; falls back to raiseAmount)
+ * @param {Function} props.onDecision   - Callback: (action) => void
  */
 import './DecisionPrompt.css';
 
@@ -27,9 +34,17 @@ export default function DecisionPrompt({
   heroStack,
   options,
   raiseAmount,
+  betAmount,
   onDecision,
 }) {
+  const hasCheck = options.includes('check');
+  const hasCall  = options.includes('call');
+  const hasFold  = options.includes('fold');
+  const hasBet   = options.includes('bet');
   const hasRaise = options.includes('raise');
+
+  // Effective bet display amount: explicit betAmount, else fall back to raiseAmount
+  const effectiveBetAmount = betAmount ?? raiseAmount;
 
   return (
     <div className="decision-prompt decision-prompt--active">
@@ -68,21 +83,45 @@ export default function DecisionPrompt({
         </div>
       </div>
 
+      {/* Button order: passive (Check, Call, Fold) left → aggressive (Bet, Raise) right */}
       <div className="decision-prompt__actions" role="group" aria-label="Your decision">
-        <button
-          className="decision-btn decision-btn--call"
-          onClick={() => onDecision('call')}
-        >
-          Call
-          <span className="decision-btn__amount">{formatAmount(callAmount)}</span>
-        </button>
+        {hasCheck && (
+          <button
+            className="decision-btn decision-btn--check"
+            onClick={() => onDecision('check')}
+          >
+            Check
+          </button>
+        )}
 
-        <button
-          className="decision-btn decision-btn--fold"
-          onClick={() => onDecision('fold')}
-        >
-          Fold
-        </button>
+        {hasCall && (
+          <button
+            className="decision-btn decision-btn--call"
+            onClick={() => onDecision('call')}
+          >
+            Call
+            <span className="decision-btn__amount">{formatAmount(callAmount)}</span>
+          </button>
+        )}
+
+        {hasFold && (
+          <button
+            className="decision-btn decision-btn--fold"
+            onClick={() => onDecision('fold')}
+          >
+            Fold
+          </button>
+        )}
+
+        {hasBet && effectiveBetAmount && (
+          <button
+            className="decision-btn decision-btn--bet"
+            onClick={() => onDecision('bet')}
+          >
+            Bet
+            <span className="decision-btn__amount">{formatAmount(effectiveBetAmount)}</span>
+          </button>
+        )}
 
         {hasRaise && raiseAmount && (
           <button

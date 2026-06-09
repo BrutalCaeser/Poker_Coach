@@ -1,5 +1,5 @@
-// revealMath.js — pure function that turns a scenario at its decision point
-// into all engine-computed numbers the reveal UI needs.
+// revealMath.js — pure functions that turn a scenario (v1 or v2) at a decision
+// point into all engine-computed numbers the reveal UI needs.
 
 import { potOdds, exactEquity1Card, exactEquity2Cards } from './math.js';
 import { calculateEquity } from './equity.js';
@@ -133,6 +133,150 @@ export function computeRevealMath(scenario) {
 
   // ── Clean outs ───────────────────────────────────────────────────────────────
   // countOuts requires exactly 3 or 4 board cards. Null otherwise.
+  let cleanOuts = null;
+  let improveEquity1Pct = null;
+  let improveEquity2Pct = null;
+
+  if (boardLen === 3 || boardLen === 4) {
+    const heroParsed = parsePlayerCards(scenario.players[heroIndex].cards);
+    if (heroParsed !== null) {
+      try {
+        const outsResult = countOuts(heroParsed, boardCards);
+        cleanOuts = outsResult.totalOuts;
+        improveEquity1Pct = exactEquity1Card(cleanOuts) * 100;
+        improveEquity2Pct = exactEquity2Cards(cleanOuts) * 100;
+      } catch {
+        // countOuts can throw on edge cases — leave nulls
+      }
+    }
+  }
+
+  return {
+    potOddsPct,
+    isAllIn,
+    villainsKnown,
+    showdownEquityPct,
+    boardLen,
+    cleanOuts,
+    improveEquity1Pct,
+    improveEquity2Pct,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// V2 helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Collect all community cards visible at a specific DecisionPoint in a v2 scenario.
+ *
+ * Algorithm:
+ *   1. Start with scenario.board (pre-action cards).
+ *   2. Walk scenario.actions in order.
+ *      - Accumulate {type:"board"} cards as they appear.
+ *      - Stop when the {type:"decision"} whose decisionId === dp.id is reached.
+ *
+ * @param {Object} scenario
+ * @param {Object} dp - The DecisionPoint whose board state we want
+ * @returns {string[]}
+ */
+function getBoardAtDP(scenario, dp) {
+  const base = Array.isArray(scenario.board) ? [...scenario.board] : [];
+
+  for (const action of scenario.actions) {
+    if (action.type === 'decision' && action.decisionId === dp.id) break;
+    if (action.type === 'board' && Array.isArray(action.cards)) {
+      base.push(...action.cards);
+    }
+  }
+
+  return base;
+}
+
+/**
+ * Determine whether a specific DecisionPoint is an all-in situation.
+ *
+ * TRUE when:
+ *   (a) dp.callAmount >= dp.heroStack, OR
+ *   (b) any bet/raise action before this DP's decision action mentions /all-in|shove/i
+ *
+ * @param {Object} scenario
+ * @param {Object} dp
+ * @returns {boolean}
+ */
+function computeIsAllInForDP(scenario, dp) {
+  if (dp.callAmount >= dp.heroStack) return true;
+
+  for (const action of scenario.actions) {
+    if (action.type === 'decision' && action.decisionId === dp.id) break;
+    if (action.type === 'bet' && typeof action.action === 'string') {
+      if (/all-in|shove/i.test(action.action)) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Compute all reveal-math numbers for a specific DecisionPoint in a v2 scenario.
+ *
+ * This mirrors computeRevealMath but sources pot/callAmount/heroStack from the
+ * DecisionPoint rather than scenario.decision, and computes the board state up
+ * to that exact decision action.
+ *
+ * @param {Object} scenario - A v2 scenario with decisionPoints[]
+ * @param {number} dpIndex  - Index into scenario.decisionPoints[]
+ * @returns {{
+ *   potOddsPct: number,
+ *   isAllIn: boolean,
+ *   villainsKnown: boolean,
+ *   showdownEquityPct: number | null,
+ *   boardLen: number,
+ *   cleanOuts: number | null,
+ *   improveEquity1Pct: number | null,
+ *   improveEquity2Pct: number | null,
+ * }}
+ */
+export function computeRevealMathForDP(scenario, dpIndex) {
+  const dp = scenario.decisionPoints[dpIndex];
+  const { heroIndex } = scenario;
+  const { callAmount, pot } = dp;
+
+  // ── Pot odds ────────────────────────────────────────────────────────────────
+  const potOddsPct = potOdds(callAmount, pot) * 100;
+
+  // ── All-in flag ──────────────────────────────────────────────────────────────
+  const isAllIn = computeIsAllInForDP(scenario, dp);
+
+  // ── Board at this DP ─────────────────────────────────────────────────────────
+  const boardStrings = getBoardAtDP(scenario, dp);
+  const boardLen = boardStrings.length;
+  const boardCards = boardStrings.length > 0 ? parseCards(boardStrings) : [];
+
+  // ── Villain hand visibility ──────────────────────────────────────────────────
+  const numPlayers = scenario.players.length;
+  let villainsKnown = true;
+  for (let i = 0; i < numPlayers; i++) {
+    if (i === heroIndex) continue;
+    const villainCards = scenario.players[i].cards;
+    if (!Array.isArray(villainCards) || villainCards.length !== 2) {
+      villainsKnown = false;
+      break;
+    }
+  }
+
+  // ── Showdown equity (Monte Carlo) ────────────────────────────────────────────
+  let showdownEquityPct = null;
+
+  if (villainsKnown) {
+    const equityPlayers = scenario.players.map((p) => ({
+      cards: parsePlayerCards(p.cards),
+    }));
+    const results = calculateEquity(equityPlayers, boardCards, 10000);
+    showdownEquityPct = results[heroIndex].equity * 100;
+  }
+
+  // ── Clean outs ───────────────────────────────────────────────────────────────
   let cleanOuts = null;
   let improveEquity1Pct = null;
   let improveEquity2Pct = null;

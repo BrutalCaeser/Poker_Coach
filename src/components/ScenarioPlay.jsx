@@ -26,24 +26,32 @@ import MathReveal from './MathReveal.jsx';
 import Card from './Card.jsx';
 import './ScenarioPlay.css';
 import ReferencePanel from './ReferencePanel.jsx';
-import { computeRevealMath } from '../engine/revealMath.js';
+import { computeRevealMath, computeRevealMathForDP } from '../engine/revealMath.js';
 
 // --- Game phases ---
+// V1 (single-decision): SETUP → ACTIONS → DECISION → REVEAL
+// V2 (multi-decision):  SETUP → ACTIONS → DECISION → STREET_REVEAL
+//                         → [loop back to ACTIONS for next street] → FINAL_REVEAL
 const PHASE = {
   SETUP: 'SETUP',
   ACTIONS: 'ACTIONS',
   DECISION: 'DECISION',
   REVEAL: 'REVEAL',
+  // V2 phases
+  STREET_REVEAL: 'STREET_REVEAL',  // per-DP reveal between streets
+  FINAL_REVEAL: 'FINAL_REVEAL',    // summary scorecard after all DPs
 };
 
 // --- Reducer ---
 const initialState = {
   phase: PHASE.SETUP,
-  actionIndex: 0,       // How many actions are visible
-  boardCards: [],        // Current board cards dealt
-  currentPot: 0,        // Running pot amount
-  userAction: null,      // User's decision
+  actionIndex: 0,        // How many actions are visible
+  currentPot: 0,         // Running pot amount
+  userAction: null,       // User's decision (v1)
   revealOpponents: false, // Whether to show opponent cards
+  // V2 fields
+  currentDpIndex: 0,     // Which DecisionPoint we're on
+  decisions: [],         // [{dpId, userAction}] — committed decisions so far
 };
 
 function gameReducer(state, action) {
@@ -52,7 +60,7 @@ function gameReducer(state, action) {
       return {
         ...initialState,
         phase: PHASE.ACTIONS,
-        actionIndex: 1, // Show first action
+        actionIndex: 1,  // Show first action
       };
 
     case 'ADVANCE': {
@@ -63,18 +71,11 @@ function gameReducer(state, action) {
       if (nextIndex <= actions.length) {
         const nextAction = actions[nextIndex - 1];
 
-        // Update board if this is a board action
-        let newBoard = state.boardCards;
-        if (nextAction && nextAction.type === 'board') {
-          newBoard = [...state.boardCards, ...nextAction.cards];
-        }
-
         // Check if the NEXT action after this one is a decision (or this one is)
         if (nextAction && nextAction.type === 'decision') {
           return {
             ...state,
             actionIndex: nextIndex,
-            boardCards: newBoard,
             phase: PHASE.DECISION,
           };
         }
@@ -86,7 +87,6 @@ function gameReducer(state, action) {
         return {
           ...state,
           actionIndex: nextIndex,
-          boardCards: newBoard,
           phase: nextDecision === 0 ? PHASE.DECISION : PHASE.ACTIONS,
         };
       }
@@ -95,11 +95,33 @@ function gameReducer(state, action) {
     }
 
     case 'DECIDE':
+      // V1: go straight to REVEAL
       return {
         ...state,
         phase: PHASE.REVEAL,
         userAction: action.payload.action,
       };
+
+    // V2: commit a decision at a specific DP → go to STREET_REVEAL
+    case 'DECIDE_DP': {
+      const { dpId, userAction } = action.payload;
+      return {
+        ...state,
+        phase: PHASE.STREET_REVEAL,
+        decisions: [...state.decisions, { dpId, userAction }],
+      };
+    }
+
+    // V2: continue from STREET_REVEAL → replay continuation actions + advance
+    case 'CONTINUE_DP': {
+      const { newBoard, nextActionIndex, isLast } = action.payload;
+      return {
+        ...state,
+        phase: isLast ? PHASE.FINAL_REVEAL : PHASE.ACTIONS,
+        currentDpIndex: state.currentDpIndex + 1,
+        actionIndex: nextActionIndex,
+      };
+    }
 
     case 'REVEAL_OPPONENTS':
       return {
@@ -132,11 +154,31 @@ function getBoardCards(actions, upToIndex) {
  * Compute the running pot based on the visible actions.
  * During ACTIONS phase we accumulate from blinds + bet actions.
  * At DECISION and REVEAL we use the scenario's exact pot.
+ * For V2 at STREET_REVEAL or FINAL_REVEAL we use the current DP's pot.
  */
-function getRunningPot(scenario, actionIndex, phase) {
-  if (phase === 'DECISION' || phase === 'REVEAL') {
+function getRunningPot(scenario, actionIndex, phase, currentDpIndex) {
+  const isV2 = Boolean(scenario.decisionPoints);
+
+  if (phase === PHASE.DECISION) {
+    if (isV2) {
+      const dp = scenario.decisionPoints[currentDpIndex];
+      return dp ? dp.pot : 0;
+    }
     return scenario.decision.pot;
   }
+  if (phase === PHASE.REVEAL) {
+    return scenario.decision.pot;
+  }
+  if (phase === PHASE.STREET_REVEAL || phase === PHASE.FINAL_REVEAL) {
+    // Show the pot at the DP that was just decided.
+    // Clamp: after the last CONTINUE_DP, currentDpIndex === decisionPoints.length (out of bounds).
+    const dpIdx = isV2
+      ? Math.min(currentDpIndex, scenario.decisionPoints.length - 1)
+      : 0;
+    const dp = isV2 && scenario.decisionPoints[dpIdx];
+    return dp ? dp.pot : 0;
+  }
+
   const { blinds, players } = scenario;
   let pot = blinds.small + blinds.big + (blinds.ante * players.length);
 
@@ -170,7 +212,7 @@ function parseDrawEquity(scenario) {
 }
 
 /**
- * Build EquityBar props for the reveal, or null when the bar doesn't fit
+ * Build EquityBar props for the v1 reveal, or null when the bar doesn't fit
  * (pre-flop, non-all-in spots, where "draw equity this street" has no meaning).
  * Pot odds, showdown equity and all-in detection are engine-computed; the draw
  * value is the lesson's own curated single-street equity.
@@ -194,6 +236,38 @@ function buildEquity(scenario) {
   return null;
 }
 
+/**
+ * Build EquityBar props for a specific DecisionPoint in a V2 scenario.
+ * Sources drawEquityPct from dp.drawEquityPct (curated per-DP) rather than
+ * parsing it from mathSteps.
+ *
+ * @param {Object} scenario
+ * @param {number} dpIndex
+ * @returns {Object|null}
+ */
+function buildEquityForDP(scenario, dpIndex) {
+  const dp = scenario.decisionPoints[dpIndex];
+  if (!dp) return null;
+
+  const rm = computeRevealMathForDP(scenario, dpIndex);
+  const breakEvenPct = round1(rm.potOddsPct);
+  const verdict = dp.correctAction;
+
+  if (rm.isAllIn) {
+    return { mode: 'allin', showdownEquityPct: round1(rm.showdownEquityPct ?? 0), breakEvenPct, verdict };
+  }
+  if (rm.boardLen >= 3) {
+    return {
+      mode: 'draw',
+      drawEquityPct: dp.drawEquityPct ?? 0,
+      showdownEquityPct: round1(rm.showdownEquityPct ?? 0),
+      breakEvenPct,
+      verdict,
+    };
+  }
+  return null;
+}
+
 export default function ScenarioPlay({
   scenario,
   onBack,
@@ -202,6 +276,9 @@ export default function ScenarioPlay({
 }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [activeTab, setActiveTab] = useState('hand');
+
+  // Is this a V2 (multi-DP) scenario?
+  const isV2 = Boolean(scenario.decisionPoints);
 
   // Auto-start the scenario
   useEffect(() => {
@@ -216,21 +293,50 @@ export default function ScenarioPlay({
     setActiveTab('hand');
   }, [state.phase]);
 
-  // Calculate derived state
+  // ---------------------------------------------------------------------------
+  // V2 derived state
+  // ---------------------------------------------------------------------------
+  const currentDp = isV2 ? scenario.decisionPoints[state.currentDpIndex] : null;
+
+  // The action index of the NEXT decision we need to stop at (or end of actions)
+  const nextDecisionIndex = useMemo(() => {
+    if (!isV2) return scenario.actions.findIndex((a) => a.type === 'decision');
+    // Find the decision action whose decisionId matches the current DP
+    if (!currentDp) return scenario.actions.length;
+    const idx = scenario.actions.findIndex(
+      (a) => a.type === 'decision' && a.decisionId === currentDp.id,
+    );
+    return idx >= 0 ? idx : scenario.actions.length;
+  }, [isV2, scenario.actions, currentDp]);
+
+  // ---------------------------------------------------------------------------
+  // Derive board + pot
+  // ---------------------------------------------------------------------------
   const boardCards = getBoardCards(scenario.actions, state.actionIndex);
-  const pot = getRunningPot(scenario, state.actionIndex, state.phase);
+  const pot = getRunningPot(scenario, state.actionIndex, state.phase, state.currentDpIndex);
 
-  // EquityBar data — computed once when the reveal is shown (runs Monte Carlo).
-  const equity = useMemo(
-    () => (state.phase === PHASE.REVEAL ? buildEquity(scenario) : null),
-    [scenario, state.phase],
-  );
+  // ---------------------------------------------------------------------------
+  // EquityBar data
+  // ---------------------------------------------------------------------------
+  const equity = useMemo(() => {
+    if (state.phase === PHASE.REVEAL) return buildEquity(scenario);
+    if (isV2 && state.phase === PHASE.STREET_REVEAL) {
+      // At STREET_REVEAL, currentDpIndex is the just-decided DP (DECIDE_DP does NOT
+      // increment it; only CONTINUE_DP does). So the correct index is currentDpIndex.
+      return buildEquityForDP(scenario, state.currentDpIndex);
+    }
+    return null;
+  }, [scenario, state.phase, isV2, state.currentDpIndex]);
 
-  // Is the action feed complete (reached the decision point)?
-  const decisionIndex = scenario.actions.findIndex((a) => a.type === 'decision');
+  // ---------------------------------------------------------------------------
+  // V1: legacy decision index + feedComplete
+  // ---------------------------------------------------------------------------
+  const decisionIndex = isV2 ? nextDecisionIndex : scenario.actions.findIndex((a) => a.type === 'decision');
   const feedComplete = state.actionIndex >= decisionIndex;
 
+  // ---------------------------------------------------------------------------
   // Handle advancing actions
+  // ---------------------------------------------------------------------------
   const handleAdvance = useCallback(() => {
     dispatch({ type: 'ADVANCE', payload: { actions: scenario.actions } });
   }, [scenario.actions]);
@@ -239,10 +345,8 @@ export default function ScenarioPlay({
   useEffect(() => {
     if (state.phase === PHASE.ACTIONS && state.actionIndex < decisionIndex) {
       const currentAction = scenario.actions[state.actionIndex];
-      // Longer delay for board cards (dramatic effect), shorter for info
       const delay = currentAction?.type === 'board' ? 1800 :
                     currentAction?.type === 'bet' ? 1200 : 1000;
-
       const timer = setTimeout(handleAdvance, delay);
       return () => clearTimeout(timer);
     }
@@ -251,30 +355,110 @@ export default function ScenarioPlay({
   // Auto-advance to decision when feed is complete
   useEffect(() => {
     if (state.phase === PHASE.ACTIONS && state.actionIndex >= decisionIndex) {
-      dispatch({
-        type: 'ADVANCE',
-        payload: { actions: scenario.actions },
-      });
+      dispatch({ type: 'ADVANCE', payload: { actions: scenario.actions } });
     }
   }, [state.phase, state.actionIndex, decisionIndex, scenario.actions]);
 
+  // ---------------------------------------------------------------------------
   // Handle decision
-  const handleDecision = useCallback((action) => {
-    dispatch({ type: 'DECIDE', payload: { action } });
+  // ---------------------------------------------------------------------------
+  const handleDecision = useCallback((userAction) => {
+    if (isV2 && currentDp) {
+      // V2: commit to this DP → STREET_REVEAL
+      dispatch({ type: 'DECIDE_DP', payload: { dpId: currentDp.id, userAction } });
+    } else {
+      // V1: go to REVEAL
+      dispatch({ type: 'DECIDE', payload: { action: userAction } });
+      if (onComplete) {
+        onComplete({
+          scenarioId: scenario.id,
+          userAction,
+          isCorrect: userAction === scenario.decision.correctAction,
+        });
+      }
+    }
+  }, [isV2, currentDp, scenario, onComplete]);
 
-    // Notify parent of completion
-    if (onComplete) {
+  // V2: continue from STREET_REVEAL to the next street
+  const handleContinueDp = useCallback(() => {
+    if (!isV2) return;
+    const justDecidedDpIndex = state.currentDpIndex;
+
+    // Find the action index to resume from: right after the current decision action
+    const currentDecisionActionIdx = scenario.actions.findIndex(
+      (a) => a.type === 'decision' && a.decisionId === scenario.decisionPoints[justDecidedDpIndex]?.id,
+    );
+    const nextActionIndex = currentDecisionActionIdx >= 0
+      ? currentDecisionActionIdx + 1
+      : state.actionIndex + 1;
+
+    const isLast = justDecidedDpIndex >= scenario.decisionPoints.length - 1;
+
+    // Fix 4: call onComplete when the hand finishes (entering FINAL_REVEAL).
+    // isCorrect = every decision matched its DP's correctAction.
+    if (isLast && onComplete) {
+      const allCorrect = state.decisions.every(({ dpId, userAction: ua }) => {
+        const dp = scenario.decisionPoints.find((d) => d.id === dpId);
+        return dp && ua === dp.correctAction;
+      });
       onComplete({
         scenarioId: scenario.id,
-        userAction: action,
-        isCorrect: action === scenario.decision.correctAction,
+        userAction: state.decisions[state.decisions.length - 1]?.userAction ?? null,
+        isCorrect: allCorrect,
       });
     }
-  }, [scenario, onComplete]);
 
-  // Decision info
+    dispatch({
+      type: 'CONTINUE_DP',
+      payload: {
+        nextActionIndex,
+        isLast,
+      },
+    });
+  }, [isV2, scenario, state.currentDpIndex, state.actionIndex, state.decisions, onComplete]);
+
+  // ---------------------------------------------------------------------------
+  // V1 decision info
+  // ---------------------------------------------------------------------------
   const decisionAction = scenario.actions.find((a) => a.type === 'decision');
-  const isCorrect = state.userAction === scenario.decision.correctAction;
+  const isCorrect = isV2
+    ? false // V2 doesn't use the single isCorrect; each DP has its own
+    : state.userAction === scenario.decision?.correctAction;
+
+  // ---------------------------------------------------------------------------
+  // V2 current DP decision action (for options/amounts)
+  // ---------------------------------------------------------------------------
+  const currentDpAction = isV2 && currentDp
+    ? scenario.actions.find((a) => a.type === 'decision' && a.decisionId === currentDp.id)
+    : null;
+
+  // Last committed decision (for STREET_REVEAL)
+  const lastDecision = state.decisions.length > 0
+    ? state.decisions[state.decisions.length - 1]
+    : null;
+  const revealDp = isV2 && lastDecision
+    ? scenario.decisionPoints.find((dp) => dp.id === lastDecision.dpId)
+    : null;
+  const streetRevealIsCorrect = revealDp && lastDecision
+    ? lastDecision.userAction === revealDp.correctAction
+    : false;
+
+  // ---------------------------------------------------------------------------
+  // V2 final scorecard rows
+  // ---------------------------------------------------------------------------
+  const scorecardRows = useMemo(() => {
+    if (!isV2 || state.phase !== PHASE.FINAL_REVEAL) return [];
+    return state.decisions.map(({ dpId, userAction: ua }) => {
+      const dp = scenario.decisionPoints.find((d) => d.id === dpId);
+      return {
+        street: dp?.street ?? dpId,
+        userAction: ua,
+        proAction: dp?.proAction,
+        correctAction: dp?.correctAction,
+        isCorrect: ua === dp?.correctAction,
+      };
+    });
+  }, [isV2, state.phase, state.decisions, scenario]);
 
   // Difficulty stars
   const stars = '★'.repeat(scenario.difficulty) + '☆'.repeat(3 - scenario.difficulty);
@@ -282,13 +466,28 @@ export default function ScenarioPlay({
   // Ref for auto-scrolling the right panel as math steps reveal
   const rightPanelRef = useRef(null);
 
-  // Auto-scroll right panel to bottom when reveal phase content changes
+  // Auto-scroll right panel to bottom when reveal phase content changes.
+  // Deps: fire only when the phase changes or new math steps arrive (decisions.length).
   useEffect(() => {
-    if (state.phase === PHASE.REVEAL && rightPanelRef.current) {
+    if (
+      (state.phase === PHASE.REVEAL ||
+       state.phase === PHASE.STREET_REVEAL ||
+       state.phase === PHASE.FINAL_REVEAL) &&
+      rightPanelRef.current
+    ) {
       const el = rightPanelRef.current;
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     }
-  });
+  }, [state.phase, state.decisions.length]);
+
+  // ---------------------------------------------------------------------------
+  // Determine which decision prompt data to show (V2 vs V1)
+  // ---------------------------------------------------------------------------
+  const activeDecisionPot = isV2 && currentDp ? currentDp.pot : scenario.decision?.pot;
+  const activeDecisionCallAmount = isV2 && currentDp ? currentDp.callAmount : scenario.decision?.callAmount;
+  const activeDecisionHeroStack = isV2 && currentDp ? currentDp.heroStack : scenario.decision?.heroStack;
+  const activeDecisionOptions = isV2 && currentDpAction ? currentDpAction.options : decisionAction?.options;
+  const activeDecisionRaise = isV2 && currentDpAction ? currentDpAction.raiseAmount : decisionAction?.raiseAmount;
 
   return (
     <div className="scenario-play">
@@ -304,6 +503,13 @@ export default function ScenarioPlay({
         </div>
       </header>
 
+      {/* Fix 9: Event banner — prominent gold placard for real-hand context */}
+      {isV2 && scenario.realHand && (
+        <div className="scenario-play__event-banner">
+          {scenario.realHand.event} · {scenario.realHand.date}
+        </div>
+      )}
+
       <div className="scenario-play__content">
         {/* ===== LEFT COLUMN: Table + Decision + Opponent Reveal + Next ===== */}
         <div className="scenario-play__left">
@@ -318,20 +524,45 @@ export default function ScenarioPlay({
             />
           </div>
 
+          {/* V2 street indicator */}
+          {isV2 && state.phase === PHASE.ACTIONS && currentDp && (
+            <div className="scenario-play__street-indicator">
+              Street {state.currentDpIndex + 1} of {scenario.decisionPoints.length}: {currentDp.street}
+            </div>
+          )}
+
           {/* Decision Prompt — directly under the table, always visible */}
-          {state.phase === PHASE.DECISION && decisionAction && (
+          {state.phase === PHASE.DECISION && activeDecisionOptions && (
             <DecisionPrompt
-              pot={scenario.decision.pot}
-              callAmount={scenario.decision.callAmount}
-              heroStack={scenario.decision.heroStack}
-              options={decisionAction.options}
-              raiseAmount={decisionAction.raiseAmount}
+              pot={activeDecisionPot}
+              callAmount={activeDecisionCallAmount}
+              heroStack={activeDecisionHeroStack}
+              options={activeDecisionOptions}
+              raiseAmount={activeDecisionRaise}
               onDecision={handleDecision}
             />
           )}
 
-          {/* Post-decision left panel: Opponent Reveal + Next Hand */}
-          {state.phase === PHASE.REVEAL && (
+          {/* V2: Continue button after street reveal */}
+          {isV2 && state.phase === PHASE.STREET_REVEAL && (
+            <div className="scenario-play__left-reveal">
+              <div className="scenario-play__next">
+                {/* Fix 2: last DP (index === length - 1) should say "See Final Result" */}
+                {state.currentDpIndex < scenario.decisionPoints.length - 1 ? (
+                  <button className="next-hand-btn" onClick={handleContinueDp}>
+                    Continue ▸
+                  </button>
+                ) : (
+                  <button className="next-hand-btn" onClick={handleContinueDp}>
+                    See Final Result ▸
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* V2: FINAL_REVEAL / V1: REVEAL post-decision buttons */}
+          {(state.phase === PHASE.REVEAL || state.phase === PHASE.FINAL_REVEAL) && (
             <div className="scenario-play__left-reveal">
               {/* Opponent card reveal */}
               {!state.revealOpponents && (
@@ -381,12 +612,12 @@ export default function ScenarioPlay({
                   actions={scenario.actions}
                   visibleCount={state.actionIndex}
                   onAdvance={handleAdvance}
-                  isComplete={feedComplete || state.phase === PHASE.REVEAL}
+                  isComplete={feedComplete || state.phase === PHASE.REVEAL || state.phase === PHASE.FINAL_REVEAL}
                 />
               )}
 
-              {/* Math Reveal — appears in right column after decision */}
-              {state.phase === PHASE.REVEAL && (
+              {/* V1: Math Reveal after single decision */}
+              {!isV2 && state.phase === PHASE.REVEAL && (
                 <div className="scenario-play__reveal">
                   <MathReveal
                     isCorrect={isCorrect}
@@ -397,6 +628,77 @@ export default function ScenarioPlay({
                     takeaway={scenario.takeaway}
                     equity={equity}
                   />
+                </div>
+              )}
+
+              {/* V2: Per-street reveal (MathReveal with proAction beat) */}
+              {isV2 && state.phase === PHASE.STREET_REVEAL && revealDp && lastDecision && (
+                <div className="scenario-play__reveal">
+                  <MathReveal
+                    isCorrect={streetRevealIsCorrect}
+                    userAction={lastDecision.userAction}
+                    correctAction={revealDp.correctAction}
+                    proAction={revealDp.proAction}
+                    proReasoning={revealDp.proReasoning}
+                    insight={revealDp.insight}
+                    mathSteps={revealDp.mathSteps}
+                    takeaway={revealDp.takeaway}
+                    equity={equity}
+                  />
+                </div>
+              )}
+
+              {/* V2: Final scorecard after all decision points */}
+              {isV2 && state.phase === PHASE.FINAL_REVEAL && (
+                <div className="scenario-play__reveal scenario-play__final-reveal">
+                  <div className="final-scorecard">
+                    <div className="final-scorecard__header">Hand Complete — Your Scorecard</div>
+                    {scenario.handResult && (
+                      <div className="final-scorecard__result">
+                        Winner: <strong>{scenario.handResult.winnerName}</strong>
+                        {scenario.handResult.showdownDesc && (
+                          <span> — {scenario.handResult.showdownDesc}</span>
+                        )}
+                      </div>
+                    )}
+                    {/* Fix 8: semantic <table> scorecard */}
+                    <table className="final-scorecard__table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Street</th>
+                          <th scope="col">You</th>
+                          <th scope="col">The Pro</th>
+                          <th scope="col">GTO</th>
+                          <th scope="col" aria-label="Result"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {scorecardRows.map((row, i) => (
+                          <tr
+                            key={i}
+                            className={`final-scorecard__row ${row.isCorrect ? 'final-scorecard__row--correct' : 'final-scorecard__row--incorrect'}`}
+                          >
+                            <td>{row.street}</td>
+                            <td className={row.userAction === row.correctAction ? 'scorecard-action--correct' : 'scorecard-action--incorrect'}>
+                              {row.userAction}
+                            </td>
+                            <td className={row.proAction === row.correctAction ? 'scorecard-action--correct' : 'scorecard-action--incorrect'}>
+                              {row.proAction ?? '—'}
+                            </td>
+                            <td className="scorecard-action--gto">{row.correctAction}</td>
+                            <td className="final-scorecard__verdict-cell">
+                              {row.isCorrect ? '✓' : row.userAction === row.proAction ? '≈' : '✗'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {scorecardRows.every((r) => r.isCorrect) && (
+                      <div className="final-scorecard__badge final-scorecard__badge--perfect">
+                        Perfect line — you out-played the pro on every street!
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </>

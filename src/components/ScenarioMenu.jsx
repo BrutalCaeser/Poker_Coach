@@ -121,10 +121,10 @@ export default function ScenarioMenu({
       {/* ── Navigation Row ── */}
       <div className="nav-row">
         <button className="nav-btn" onClick={onFreePlay}>
-          🃏 Free Play
+          <span aria-hidden="true">🃏</span> Free Play
         </button>
         <button className="nav-btn nav-btn--coach" onClick={onCoach}>
-          🎓 Ask Coach
+          <span aria-hidden="true">🎓</span> Ask Coach
         </button>
       </div>
 

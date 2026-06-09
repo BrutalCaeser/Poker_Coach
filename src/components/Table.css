@@ -23,7 +23,7 @@
    Felt table surface
    Two concentric rings of border simulate a wooden rail with depth:
    - Outer glow/shadow (--shadow-3)
-   - A warm wood ring (#4a3520 → #2e1e0e)
+   - A warm wood ring (#4a3520 -> #2e1e0e)
    - A thin bright highlight seam on the inner edge of the rail
    - A thin shadow seam on the felt edge
    ================================================================ */
@@ -45,7 +45,7 @@
     );
 
   /*
-   * Rail system (outermost → innermost):
+   * Rail system (outermost -> innermost):
    *   6px warm wood outer ring
    *   3px dark wood inner ring
    *   2px inset golden highlight seam (light from above)
@@ -54,8 +54,8 @@
    * box-shadow layers (all at once, comma-separated):
    *  1. outer drop shadow (depth)
    *  2. outer drop shadow (ambient)
-   *  3. wooden rail — warm mid-brown ring
-   *  4. wooden rail — dark inner lip
+   *  3. wooden rail -- warm mid-brown ring
+   *  4. wooden rail -- dark inner lip
    *  5. inner highlight seam (bright edge of rail meeting felt)
    */
   box-shadow:
@@ -128,7 +128,7 @@
 }
 
 /*
- * Pot pill — tactile gold capsule with depth.
+ * Pot pill -- tactile gold capsule with depth.
  * Uses transform-only approach for future animation hooks.
  * Sheen via a gradient overlay (no box-shadow animation).
  */
@@ -162,20 +162,18 @@
     inset 0 1px 0 rgba(255, 220, 100, 0.12);
 }
 
-/* Gold sheen sweep on the pot */
+/* Gold sheen sweep on the pot -- translucent diagonal so text stays legible.
+ * Never reference --gold-sheen (a solid opaque value) as that hides the amount. */
 .table__pot::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: var(
-    --gold-sheen,
-    linear-gradient(
-      105deg,
-      transparent 30%,
-      rgba(200, 160, 60, 0.12) 50%,
-      transparent 70%
-    )
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 220, 100, 0.10) 50%,
+    transparent 70%
   );
   pointer-events: none;
 }
@@ -214,7 +212,7 @@
 }
 
 /* ================================================================
-   Seat info chip — elevated surface look
+   Seat info chip -- elevated surface look
    ================================================================ */
 .seat__info {
   display: flex;
@@ -244,7 +242,7 @@
   -webkit-backdrop-filter: blur(6px);
 }
 
-/* Hero seat chip — gold trim + stronger presence */
+/* Hero seat chip -- gold trim + stronger presence */
 .seat__info--hero {
   border-color: rgba(200, 160, 60, 0.35);
   background:
@@ -293,8 +291,10 @@
 }
 
 /* ================================================================
-   Behaviour tooltip — hover AND keyboard/focus accessible.
+   Behaviour tooltip -- hover AND keyboard/focus accessible.
    Hidden by default; shown on :hover OR :focus-within of the seat.
+   tabIndex is on .table__seat (not .seat__info), so :focus-within fires
+   when the seat element itself is focused via keyboard Tab.
    ================================================================ */
 .seat__behaviour {
   display: block;
@@ -340,10 +340,11 @@
   pointer-events: auto;
 }
 
-/* tabIndex shim: make the info chip focusable to get focus-within working */
-.seat__info:focus {
-  outline: 2px solid rgba(200, 160, 60, 0.50);
-  outline-offset: 2px;
+/* Keyboard focus ring on the seat itself (tabIndex is on .table__seat) */
+.table__seat:focus {
+  outline: 2px solid rgba(200, 160, 60, 0.55);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 /* ================================================================
@@ -355,7 +356,7 @@
 }
 
 /* ================================================================
-   Seat positions (2–6 players)
+   Seat positions (2-6 players)
    ================================================================ */
 
 /* 2 players */
@@ -389,7 +390,90 @@
 .table--6 .table__seat:nth-child(6) { top: 40%; left: -6%; transform: translateY(-50%); }
 
 /* ================================================================
-   Reduced motion — honour system preference
+   Pro seat -- slightly wider info chip to fit stack below the avatar
+   ================================================================ */
+.table__seat--pro .seat__info--pro {
+  min-width: 68px;
+}
+
+/* ================================================================
+   Venue theme hooks
+   ================================================================
+   CSS-only. Each venue class overrides felt accent colours and the
+   rail tone via locally-scoped custom properties. No assets required.
+
+   Usage: pass venue="wsop" | venue="tournament" to <Table>.
+   Default (cash game) is unchanged.
+   ================================================================ */
+
+/*
+ * WSOP / Main Event feel:
+ *   - Brighter, slightly warmer felt (spotlight on the feature table)
+ *   - Deeper mahogany rail
+ *   - Stronger gold accents on the pot pill
+ */
+.table--venue-wsop {
+  background:
+    radial-gradient(
+      ellipse at 50% 40%,
+      #357d4e 0%,
+      #286845 28%,
+      #1d5335 58%,
+      #123e25 80%,
+      #0d2f1a 100%
+    );
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.70),
+    0  4px 16px rgba(0, 0, 0, 0.50),
+    0  0   0 8px  #6b3a18,
+    0  0   0 14px #33190a,
+    inset 0 2px 4px rgba(255, 255, 255, 0.06),
+    inset 0 0 60px rgba(0, 0, 0, 0.30);
+}
+
+/* WSOP: pot pill border glows brighter */
+.table--venue-wsop .table__pot {
+  border-color: rgba(200, 160, 60, 0.60);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(200, 160, 60, 0.25),
+    0 0 14px rgba(200, 160, 60, 0.20),
+    inset 0 1px 0 rgba(255, 220, 100, 0.18);
+}
+
+/*
+ * Tournament feel (satellite / multi-table):
+ *   - Slightly cooler, blue-tinted felt for a modern cardroom look
+ *   - Slate-blue rail instead of warm wood
+ *   - Subtler gold (more corporate / televised tone)
+ */
+.table--venue-tournament {
+  background:
+    radial-gradient(
+      ellipse at 50% 40%,
+      #2a5f6e 0%,
+      #1e4a58 28%,
+      #163844 58%,
+      #0e2830 80%,
+      #091d23 100%
+    );
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.68),
+    0  4px 16px rgba(0, 0, 0, 0.48),
+    0  0   0 8px  #233a4a,
+    0  0   0 14px #101e2a,
+    inset 0 2px 4px rgba(255, 255, 255, 0.04),
+    inset 0 0 60px rgba(0, 0, 0, 0.32);
+}
+
+/* Tournament: pot pill border in softer gold */
+.table--venue-tournament .table__pot {
+  border-color: rgba(200, 160, 60, 0.30);
+  color: var(--gold-light, #ddb94e);
+}
+
+/* ================================================================
+   Reduced motion -- honour system preference
    ================================================================ */
 @media (prefers-reduced-motion: reduce) {
   .table__seat,
@@ -399,7 +483,7 @@
     animation: none;
   }
   .seat__behaviour {
-    /* Still show on hover/focus — just no motion */
+    /* Still show on hover/focus -- just no motion */
     transform: translateX(-50%) translateY(0);
   }
 }
@@ -407,13 +491,55 @@
 /* ================================================================
    Responsive
    ================================================================ */
+
+/* <= 640px: tablets / large phones */
 @media (max-width: 640px) {
   .table-container {
-    padding: 3.5rem var(--space-2) 4rem;
+    /* Extra bottom padding so the hero seat (bottom: -20%) does not clip
+     * below the viewport or collide with the DecisionPrompt. */
+    padding: 3.5rem var(--space-2) 5.5rem;
   }
 
   .table {
-    aspect-ratio: 1.6 / 1;
+    /* Taller aspect ratio (closer to square) keeps seats inside the viewport. */
+    aspect-ratio: 1.4 / 1;
+  }
+
+  /* Pull seats INWARD so they do not protrude outside the oval on small screens */
+
+  /* Top seats: pull up less aggressively */
+  .table--2 .table__seat:nth-child(1),
+  .table--3 .table__seat:nth-child(1),
+  .table--3 .table__seat:nth-child(2),
+  .table--4 .table__seat:nth-child(1),
+  .table--5 .table__seat:nth-child(1),
+  .table--5 .table__seat:nth-child(2),
+  .table--6 .table__seat:nth-child(1),
+  .table--6 .table__seat:nth-child(2) {
+    top: -14%;
+  }
+
+  /* Bottom hero seat: pull down less aggressively */
+  .table--2 .table__seat:nth-child(2),
+  .table--3 .table__seat:nth-child(3),
+  .table--4 .table__seat:nth-child(4),
+  .table--5 .table__seat:nth-child(5),
+  .table--6 .table__seat:nth-child(4),
+  .table--6 .table__seat:nth-child(5) {
+    bottom: -14%;
+  }
+
+  /* Side seats: pull inward from -6% to -2% */
+  .table--4 .table__seat:nth-child(2),
+  .table--5 .table__seat:nth-child(4),
+  .table--6 .table__seat:nth-child(6) {
+    left: -2%;
+  }
+
+  .table--4 .table__seat:nth-child(3),
+  .table--5 .table__seat:nth-child(3),
+  .table--6 .table__seat:nth-child(3) {
+    right: -2%;
   }
 
   .table__pot {
@@ -437,5 +563,49 @@
   .seat__behaviour {
     font-size: 0.55rem;
     padding: 2px var(--space-1);
+  }
+}
+
+/* <= 380px: smallest phones */
+@media (max-width: 380px) {
+  .table-container {
+    padding: 3rem var(--space-1) 5rem;
+  }
+
+  .table {
+    aspect-ratio: 1.3 / 1;
+  }
+
+  /* Even more inward on the smallest screens */
+  .table--2 .table__seat:nth-child(1),
+  .table--3 .table__seat:nth-child(1),
+  .table--3 .table__seat:nth-child(2),
+  .table--4 .table__seat:nth-child(1),
+  .table--5 .table__seat:nth-child(1),
+  .table--5 .table__seat:nth-child(2),
+  .table--6 .table__seat:nth-child(1),
+  .table--6 .table__seat:nth-child(2) {
+    top: -10%;
+  }
+
+  .table--2 .table__seat:nth-child(2),
+  .table--3 .table__seat:nth-child(3),
+  .table--4 .table__seat:nth-child(4),
+  .table--5 .table__seat:nth-child(5),
+  .table--6 .table__seat:nth-child(4),
+  .table--6 .table__seat:nth-child(5) {
+    bottom: -10%;
+  }
+
+  .table--4 .table__seat:nth-child(2),
+  .table--5 .table__seat:nth-child(4),
+  .table--6 .table__seat:nth-child(6) {
+    left: 0%;
+  }
+
+  .table--4 .table__seat:nth-child(3),
+  .table--5 .table__seat:nth-child(3),
+  .table--6 .table__seat:nth-child(3) {
+    right: 0%;
   }
 }

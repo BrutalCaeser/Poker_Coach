@@ -163,4 +163,86 @@
  *                                             Used to construct contextual Coach responses.
  */
 
+// ---------------------------------------------------------------------------
+// SCHEMA V2 — additive types for real-hand ("Ghost Seat") scenarios
+// ---------------------------------------------------------------------------
+
+/**
+ * @typedef {Object} DecisionPoint
+ * A single street where the hero must act in a multi-decision real-hand scenario.
+ *
+ * @property {string}      id            - Street identifier: "preflop"|"flop"|"turn"|"river"
+ * @property {string}      street        - Human-readable label (e.g. "Flop")
+ * @property {string[]}    options       - Available actions: e.g. ["call","fold","raise"]
+ * @property {number}      callAmount    - Amount required to call
+ * @property {number}      [raiseAmount] - Amount to raise to (only if "raise" is in options)
+ * @property {string}      correctAction - The GTO/mathematically correct action
+ * @property {number}      pot           - Total pot size facing the hero at this decision
+ * @property {number}      heroStack     - Hero's remaining stack at this decision
+ * @property {string}      proAction     - What the pro ACTUALLY did (withheld until after commit)
+ * @property {string}      [proReasoning] - Optional brief explanation of the pro's reasoning
+ * @property {number}      [drawEquityPct] - 0-100, the lesson's single-street draw equity for the
+ *                                           EquityBar. Omit for all-in/preflop situations.
+ * @property {MathStep[]}  mathSteps     - Step-by-step math breakdown for this decision point
+ * @property {string}      insight       - 1-2 sentence framing of what this street is really about
+ * @property {string}      takeaway      - Generalizable principle for this decision point
+ */
+
+/**
+ * @typedef {Object} PlayerV2
+ * Extended player shape for real-hand scenarios. Additive — all v1 Player
+ * fields are still present; these are optional additions.
+ *
+ * @property {string}  [avatarId]  - Identifier for a stylized illustrated portrait asset
+ * @property {boolean} [isPro]     - True if this player is the featured pro
+ * @property {string}  [country]   - ISO 3166-1 alpha-2 country code (e.g. "US", "DE")
+ */
+
+/**
+ * @typedef {Object} RealHandMeta
+ * Attribution and provenance for a real-hand scenario.
+ *
+ * @property {string} event         - Tournament or game name (e.g. "WSOP Main Event")
+ * @property {string} venue         - Physical venue (e.g. "Rio All-Suite Hotel, Las Vegas")
+ * @property {string} date          - ISO date string or year (e.g. "2003-05-29" or "2003")
+ * @property {string} [season]      - Season or series identifier (e.g. "2003")
+ * @property {string} [sourceRef]   - URL or citation for the hand record
+ * @property {string} [sourceLicense] - License under which the hand data is used (e.g. "CC-BY-4.0")
+ */
+
+/**
+ * @typedef {Object} Action
+ * @see {InfoAction|BetAction|BoardAction|DecisionAction} — existing v1 definition above.
+ *
+ * V2 extension: a `{type:"decision"}` action in a real-hand scenario's actions[]
+ * array may additionally carry `decisionId` to link to the corresponding
+ * DecisionPoint in `decisionPoints[]`.
+ *
+ * @property {string} [decisionId] - Links to the `id` of the matching DecisionPoint.
+ *                                    Only present on decision-type actions in v2 scenarios.
+ */
+
+/**
+ * @typedef {Object} StreetResult
+ * The real continuation of play on a street AFTER the hero has made their
+ * decision at that decision point.
+ *
+ * @property {string}   afterDpId            - The DecisionPoint.id this result follows
+ * @property {Action[]} continuationActions  - The actual actions that happened after the
+ *                                             hero's decision (bet/call/fold by other players)
+ * @property {string[]} [newBoard]           - Cards dealt after this street (e.g. the turn card)
+ */
+
+/**
+ * @typedef {Object} HandResult
+ * The final outcome of the real hand.
+ *
+ * @property {number} potTotal        - Total pot won at showdown/end
+ * @property {number} winnerIndex     - Index into the scenario's players[] array
+ * @property {string} winnerName      - Display name of the winner
+ * @property {string} [showdownDesc]  - Optional description of the showdown
+ *                                      (e.g. "Full house beats flush")
+ */
+
 export default {};
+

@@ -278,6 +278,24 @@
 }
 
 /* -------------------------------------------------------
+   CHECK button — gold/neutral (passive, no chips go in)
+------------------------------------------------------- */
+.decision-btn--check {
+  background: rgba(200, 160, 60, 0.08);
+  border-color: rgba(200, 160, 60, 0.45);
+  color: var(--gold-light);
+  box-shadow:
+    var(--shadow-1),
+    var(--shadow-inset-hi),
+    0 0 22px rgba(200, 160, 60, 0.10);
+  opacity: 0.90;
+}
+
+.decision-btn--check:hover {
+  opacity: 1;
+}
+
+/* -------------------------------------------------------
    RAISE button — gold, gold-sheen (most premium feel)
 ------------------------------------------------------- */
 .decision-btn--raise {
@@ -292,6 +310,29 @@
 
 /* Gold diagonal sheen — static, only opacity varies on hover */
 .decision-btn--raise::after {
+  background: linear-gradient(
+    120deg,
+    rgba(200, 160, 60, 0.18) 0%,
+    rgba(255, 220, 100, 0.08) 35%,
+    transparent 60%
+  );
+}
+
+/* -------------------------------------------------------
+   BET button — gold-sheen, same premium feel as Raise
+------------------------------------------------------- */
+.decision-btn--bet {
+  background: rgba(200, 160, 60, 0.14);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow:
+    var(--shadow-2),
+    var(--shadow-inset-hi),
+    var(--glow-gold-val);
+}
+
+/* Gold diagonal sheen — mirrors Raise */
+.decision-btn--bet::after {
   background: linear-gradient(
     120deg,
     rgba(200, 160, 60, 0.18) 0%,
