@@ -1,7 +1,8 @@
 /* ============================================================
-   Poker Table Component Styles
-   Oval green felt table with player positions, board, and pot.
-   Hero always at the bottom (prominent).
+   Poker Table Component Styles — Casino Luxury Edition
+   Oval green felt with wooden rail, tactile pot pill,
+   elevated seat chips, and a refined player seat layout.
+   Animate ONLY transform + opacity — GPU-safe.
    ============================================================ */
 
 .table-container {
@@ -11,7 +12,6 @@
   padding: 5rem var(--space-4) 6rem;
 }
 
-/* Two-column desktop layout — table gets more room */
 @media (min-width: 1024px) {
   .table-container {
     max-width: 100%;
@@ -19,40 +19,95 @@
   }
 }
 
-/* --- The felt table surface --- */
+/* ================================================================
+   Felt table surface
+   Two concentric rings of border simulate a wooden rail with depth:
+   - Outer glow/shadow (--shadow-3)
+   - A warm wood ring (#4a3520 → #2e1e0e)
+   - A thin bright highlight seam on the inner edge of the rail
+   - A thin shadow seam on the felt edge
+   ================================================================ */
 .table {
   position: relative;
   width: 100%;
   aspect-ratio: 1.8 / 1;
   border-radius: 50%;
+
+  /* Deep, rich felt: darker vignette ring near the rail */
   background:
-    radial-gradient(ellipse at 50% 50%, #2a6e3f 0%, #1f5532 40%, #164225 80%, #0f3018 100%);
-  border: 6px solid #3a2a18;
+    radial-gradient(
+      ellipse at 50% 40%,
+      #2d7a47 0%,
+      #246039 28%,
+      #1b4d2e 58%,
+      #113821 80%,
+      #0c2c19 100%
+    );
+
+  /*
+   * Rail system (outermost → innermost):
+   *   6px warm wood outer ring
+   *   3px dark wood inner ring
+   *   2px inset golden highlight seam (light from above)
+   *   Table drop shadow via box-shadow layers
+   *
+   * box-shadow layers (all at once, comma-separated):
+   *  1. outer drop shadow (depth)
+   *  2. outer drop shadow (ambient)
+   *  3. wooden rail — warm mid-brown ring
+   *  4. wooden rail — dark inner lip
+   *  5. inner highlight seam (bright edge of rail meeting felt)
+   */
   box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.3),
-    0 4px 20px rgba(0, 0, 0, 0.4),
-    0 0 0 3px #4a3a28,
-    0 0 0 6px #2a1a10;
+    0 16px 48px rgba(0, 0, 0, 0.65),
+    0  4px 16px rgba(0, 0, 0, 0.45),
+    0  0   0 8px  #5a3e22,
+    0  0   0 14px #2e1e0e,
+    inset 0 2px 4px rgba(255, 255, 255, 0.05),
+    inset 0 0 60px rgba(0, 0, 0, 0.28);
+
   overflow: visible;
 }
 
-/* Subtle felt texture overlay */
+/* Felt micro-texture + subtle vignette darkening near the edge */
 .table::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.02) 2px,
-    rgba(0, 0, 0, 0.02) 4px
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.22) 100%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.025) 2px,
+      rgba(0, 0, 0, 0.025) 4px
+    );
+  pointer-events: none;
+}
+
+/* A faint top-light reflection on the felt surface */
+.table::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 50% 20%,
+    rgba(255, 255, 255, 0.045) 0%,
+    transparent 60%
   );
   pointer-events: none;
 }
 
-/* --- Center area: board cards + pot --- */
+/* ================================================================
+   Center: board cards + pot
+   ================================================================ */
 .table__center {
   position: absolute;
   top: 50%;
@@ -72,21 +127,67 @@
   justify-content: center;
 }
 
+/*
+ * Pot pill — tactile gold capsule with depth.
+ * Uses transform-only approach for future animation hooks.
+ * Sheen via a gradient overlay (no box-shadow animation).
+ */
 .table__pot {
   font-family: var(--font-mono);
   font-size: var(--text-base);
   font-weight: 700;
-  color: var(--gold);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-  padding: var(--space-1) var(--space-3);
-  background: rgba(0, 0, 0, 0.35);
+  color: var(--gold, #c8a03c);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  padding: var(--space-1) var(--space-4);
   border-radius: var(--radius-full);
-  border: 1px solid var(--gold-border);
+  border: 1px solid rgba(200, 160, 60, 0.40);
   white-space: nowrap;
   order: -1;
+  position: relative;
+  overflow: hidden;
+
+  /* Dark base with warm under-glow */
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.10) 0%,
+      rgba(255, 255, 255, 0.01) 40%,
+      transparent 100%
+    ),
+    rgba(8, 12, 16, 0.72);
+
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(200, 160, 60, 0.15),
+    inset 0 1px 0 rgba(255, 220, 100, 0.12);
 }
 
-/* --- Player seats --- */
+/* Gold sheen sweep on the pot */
+.table__pot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(
+    --gold-sheen,
+    linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(200, 160, 60, 0.12) 50%,
+      transparent 70%
+    )
+  );
+  pointer-events: none;
+}
+
+/* Chip-to-pot entrance */
+.table__pot.anim-chips {
+  animation: chips-to-pot var(--dur-base, 0.35s) var(--ease-out, ease-out) both;
+}
+
+/* ================================================================
+   Player seats
+   ================================================================ */
 .table__seat {
   position: absolute;
   display: flex;
@@ -94,44 +195,75 @@
   align-items: center;
   gap: 4px;
   z-index: var(--z-above);
-  transition: opacity var(--transition-normal);
+  /* opacity-only fade for reduced motion compliance */
+  transition: opacity var(--dur-base, 250ms) var(--ease-out, ease);
 }
 
 .table__seat--hero {
   z-index: calc(var(--z-above) + 1);
 }
 
-/* Push info chips outside the table boundary for all seats.
-   Opponents: info above cards (away from table center).
-   Hero: info below cards (away from table center). */
+/* Opponents: info chip above cards (away from felt center) */
 .table__seat:not(.table__seat--hero) .seat__info {
   order: -1;
 }
 
+/* Hero: info chip below cards */
 .table__seat--hero .seat__info {
   order: 1;
 }
 
-/* Player info chip (name + stack) */
+/* ================================================================
+   Seat info chip — elevated surface look
+   ================================================================ */
 .seat__info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2px var(--space-2);
-  background: rgba(13, 18, 24, 0.88);
+  padding: 3px var(--space-2);
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(4px);
-  min-width: 60px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  min-width: 62px;
   text-align: center;
   position: relative;
+
+  /* Layered dark surface: a subtle top highlight for depth */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.0) 100%
+    ),
+    rgba(10, 14, 20, 0.90);
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.50),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
+/* Hero seat chip — gold trim + stronger presence */
 .seat__info--hero {
-  border-color: var(--gold-border);
-  background: rgba(13, 18, 24, 0.92);
+  border-color: rgba(200, 160, 60, 0.35);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(200, 160, 60, 0.06) 0%,
+      rgba(200, 160, 60, 0.02) 100%
+    ),
+    rgba(10, 14, 20, 0.92);
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(200, 160, 60, 0.12),
+    inset 0 1px 0 rgba(255, 220, 100, 0.10);
 }
 
+/* ================================================================
+   Seat text
+   ================================================================ */
 .seat__name {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
@@ -142,7 +274,7 @@
 }
 
 .seat__name--hero {
-  color: var(--gold);
+  color: var(--gold, #c8a03c);
 }
 
 .seat__stack {
@@ -160,24 +292,34 @@
   letter-spacing: 0.05em;
 }
 
-/* Behaviour tooltip — shown on hover over seat */
+/* ================================================================
+   Behaviour tooltip — hover AND keyboard/focus accessible.
+   Hidden by default; shown on :hover OR :focus-within of the seat.
+   ================================================================ */
 .seat__behaviour {
-  display: none;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%);
+  /* Use transform instead of left-shift so it's GPU-composited */
+  transform: translateX(-50%) translateY(4px);
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   color: var(--text-primary);
-  background: var(--bg-surface);
+  background: var(--bg-surface, #131a24);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--gold-border);
+  border: 1px solid rgba(200, 160, 60, 0.30);
   white-space: nowrap;
   z-index: calc(var(--z-above) + 10);
-  pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+
+  /* Animate transform + opacity (GPU-safe) */
+  transition:
+    opacity  var(--dur-fast, 150ms) var(--ease-out, ease),
+    transform var(--dur-fast, 150ms) var(--ease-out, ease);
 }
 
 .seat__behaviour::after {
@@ -187,30 +329,36 @@
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: var(--gold-border);
+  border-top-color: rgba(200, 160, 60, 0.30);
 }
 
-.table__seat:hover .seat__behaviour {
-  display: block;
+/* Show on hover OR focus-within (keyboard accessible) */
+.table__seat:hover .seat__behaviour,
+.table__seat:focus-within .seat__behaviour {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
-/* Seat cards */
+/* tabIndex shim: make the info chip focusable to get focus-within working */
+.seat__info:focus {
+  outline: 2px solid rgba(200, 160, 60, 0.50);
+  outline-offset: 2px;
+}
+
+/* ================================================================
+   Seat cards
+   ================================================================ */
 .seat__cards {
   display: flex;
   gap: var(--space-1);
 }
 
-/* --- Seat positions (2-6 players) ---
-   Cards sit at the table edge — mostly OUTSIDE, small overlap inside.
-   Info chips are pushed outside via CSS order.
-   Hero is always at the bottom center.
+/* ================================================================
+   Seat positions (2–6 players)
+   ================================================================ */
 
-   Math (desktop ~444px tall table):
-   - Top/bottom offset -20% ≈ 89px → cards just at edge
-   - Side offset -6% ≈ 48px → cards just at edge
-*/
-
-/* 2 players: hero bottom, villain top */
+/* 2 players */
 .table--2 .table__seat:nth-child(1) { top: -20%; left: 50%; transform: translateX(-50%); }
 .table--2 .table__seat:nth-child(2) { bottom: -20%; left: 50%; transform: translateX(-50%); }
 
@@ -240,7 +388,25 @@
 .table--6 .table__seat:nth-child(5) { bottom: -20%; left: 35%; transform: translateX(-50%); }
 .table--6 .table__seat:nth-child(6) { top: 40%; left: -6%; transform: translateY(-50%); }
 
-/* --- Responsive --- */
+/* ================================================================
+   Reduced motion — honour system preference
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .table__seat,
+  .seat__behaviour,
+  .table__pot.anim-chips {
+    transition: none;
+    animation: none;
+  }
+  .seat__behaviour {
+    /* Still show on hover/focus — just no motion */
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ================================================================
+   Responsive
+   ================================================================ */
 @media (max-width: 640px) {
   .table-container {
     padding: 3.5rem var(--space-2) 4rem;
@@ -252,7 +418,7 @@
 
   .table__pot {
     font-size: var(--text-sm);
-    padding: 2px var(--space-2);
+    padding: 2px var(--space-3);
   }
 
   .seat__info {

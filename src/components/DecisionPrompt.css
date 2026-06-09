@@ -2,35 +2,111 @@
    DecisionPrompt Component Styles
    The critical decision UI: large, weighty, tactile buttons.
    CALL=green, FOLD=red, RAISE=gold. Feels like committing chips.
+
+   Motion rules: animate ONLY transform + opacity (60fps).
+   No box-shadow / width / top in transitions.
+   Perpetual glow replaced by a single attention pulse on mount
+   (opacity of a pseudo-element overlay), then calms.
    ============================================================ */
 
+/* --- Local token fallbacks --- */
 .decision-prompt {
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-surface-elevated);
-  border-radius: var(--radius-md);
-  border: 2px solid var(--gold-border);
-  box-shadow: var(--shadow-glow-gold);
-  animation: slide-up 0.4s ease-out both;
-  text-align: center;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-enter: 380ms;
+  --dur-press: 120ms;
+  /* Shadow depth levels (inset + outer) */
+  --shadow-1: 0 1px 4px rgba(0, 0, 0, 0.5);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.65), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-3: 0 8px 32px rgba(0, 0, 0, 0.75), 0 2px 6px rgba(0, 0, 0, 0.5);
+  --shadow-inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  /* Glows: static (for base state), not animated via transition */
+  --glow-green-val: 0 0 22px rgba(90, 173, 90, 0.22);
+  --glow-red-val: 0 0 22px rgba(217, 79, 99, 0.22);
+  --glow-gold-val: 0 0 22px rgba(200, 160, 60, 0.22);
 }
 
-/* Header: "Action is on you." */
+/* --- Entry animation --- */
+@keyframes dp-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- Attention pulse: a radial glow overlay fades in then out once --- */
+/* Implemented as opacity on a pseudo-element so only opacity changes (GPU) */
+@keyframes dp-attention-pulse {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* --- Container --- */
+.decision-prompt {
+  position: relative;
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--gold-border);
+  /* Static shadow — not animated */
+  box-shadow: var(--shadow-2), var(--shadow-inset-hi);
+  animation: dp-enter var(--dur-enter) var(--ease-out) both;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Attention pulse overlay (mount-only, no perpetual loop) */
+.decision-prompt--active::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(200, 160, 60, 0.18) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  animation: dp-attention-pulse 1.6s var(--ease-out) 0.3s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decision-prompt {
+    animation: none;
+  }
+  .decision-prompt--active::before {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* --- Header --- */
 .decision-prompt__header {
   font-family: var(--font-body);
   font-size: var(--text-lg);
   font-weight: 700;
   color: var(--gold);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   letter-spacing: 0.02em;
 }
 
-/* Game state: pot, call amount, stack */
+/* --- Stats row: Pot · Facing · Stack --- */
 .decision-prompt__state {
   display: flex;
   justify-content: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-3);
+  gap: 0;
+  margin-bottom: var(--space-4);
   flex-wrap: wrap;
+  /* Subtle dividers between stats */
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.18);
+  overflow: hidden;
 }
 
 .decision-prompt__stat {
@@ -38,6 +114,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  flex: 1;
+  min-width: 80px;
+}
+
+/* Dividers between stat cells */
+.decision-prompt__stat + .decision-prompt__stat {
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .decision-prompt__stat-label {
@@ -45,151 +129,225 @@
   font-size: var(--text-xs);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
+  font-weight: 500;
 }
 
+/* Monospace, tabular-nums for all stat values */
 .decision-prompt__stat-value {
   font-family: var(--font-mono);
-  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1;
 }
 
+/* Pot: gold — most important number */
 .decision-prompt__stat-value--pot {
   color: var(--gold);
+  font-size: var(--text-xl);
 }
 
+/* Facing (call amount): warm red */
 .decision-prompt__stat-value--call {
   color: var(--red-light);
 }
 
-/* --- Action buttons --- */
+/* --- Action buttons grid --- */
 .decision-prompt__actions {
   display: flex;
   justify-content: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
+/* -------------------------------------------------------
+   Base decision button
+   Depth via layered box-shadow (STATIC — not animated).
+   Motion via transform + opacity ONLY.
+------------------------------------------------------- */
 .decision-btn {
   font-family: var(--font-ui);
   font-size: var(--text-base);
   font-weight: 700;
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
-  border: 2px solid transparent;
+  border: 1.5px solid transparent;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  /* Only animate transform + opacity — never box-shadow, border, background */
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    opacity var(--dur-press) ease;
+  will-change: transform, opacity;
   min-width: 120px;
+  min-height: 52px;        /* Generous tap target (>= 48px) */
   text-transform: uppercase;
   letter-spacing: 0.08em;
   position: relative;
   overflow: hidden;
+  /* Crisp text on dark background */
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Hover shine effect */
+/* Subtle lift on hover (transform only) */
+.decision-btn:hover {
+  transform: translateY(-2px);
+  opacity: 1;
+}
+
+/* Satisfying weighted press */
+.decision-btn:active {
+  transform: scale(0.97) translateY(0);
+  opacity: 0.92;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decision-btn:hover {
+    transform: none;
+  }
+  .decision-btn:active {
+    transform: none;
+    opacity: 0.85;
+  }
+}
+
+/* Top-edge sheen: static gradient, no transition needed */
+.decision-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+/* Corner shine overlay — opacity fades on hover (GPU-safe) */
 .decision-btn::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 50%,
-    transparent 100%
+    rgba(255, 255, 255, 0.07) 0%,
+    transparent 45%
   );
   opacity: 0;
-  transition: opacity var(--transition-fast);
+  transition: opacity 200ms ease;
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 .decision-btn:hover::after {
   opacity: 1;
 }
 
-.decision-btn:active {
-  transform: scale(0.97);
-}
-
-/* CALL button: green */
+/* -------------------------------------------------------
+   CALL button — green, deepest shadow to signal "commit"
+------------------------------------------------------- */
 .decision-btn--call {
-  background: rgba(90, 173, 90, 0.12);
+  background: rgba(90, 173, 90, 0.14);
   border-color: var(--green);
   color: var(--green-light);
-  box-shadow: 0 0 0 0 rgba(90, 173, 90, 0.2);
+  box-shadow:
+    var(--shadow-2),
+    var(--shadow-inset-hi),
+    var(--glow-green-val);
 }
 
-.decision-btn--call:hover {
-  background: rgba(90, 173, 90, 0.2);
-  box-shadow: var(--shadow-glow-green);
-  border-color: var(--green-light);
-}
-
-/* FOLD button: red */
+/* -------------------------------------------------------
+   FOLD button — red, recedes slightly (lower emphasis)
+------------------------------------------------------- */
 .decision-btn--fold {
   background: rgba(217, 79, 99, 0.12);
-  border-color: var(--red);
+  border-color: var(--red-dim);
   color: var(--red-light);
-  box-shadow: 0 0 0 0 rgba(217, 79, 99, 0.2);
+  box-shadow:
+    var(--shadow-1),
+    var(--shadow-inset-hi),
+    var(--glow-red-val);
+  /* Slightly lower opacity than call/raise — fold is recessive */
+  opacity: 0.88;
 }
 
 .decision-btn--fold:hover {
-  background: rgba(217, 79, 99, 0.2);
-  box-shadow: var(--shadow-glow-red);
-  border-color: var(--red-light);
+  opacity: 1;
 }
 
-/* RAISE button: gold */
+/* -------------------------------------------------------
+   RAISE button — gold, gold-sheen (most premium feel)
+------------------------------------------------------- */
 .decision-btn--raise {
-  background: rgba(200, 160, 60, 0.12);
+  background: rgba(200, 160, 60, 0.14);
   border-color: var(--gold);
   color: var(--gold-light);
-  box-shadow: 0 0 0 0 rgba(200, 160, 60, 0.2);
+  box-shadow:
+    var(--shadow-2),
+    var(--shadow-inset-hi),
+    var(--glow-gold-val);
 }
 
-.decision-btn--raise:hover {
-  background: rgba(200, 160, 60, 0.2);
-  box-shadow: var(--shadow-glow-gold);
-  border-color: var(--gold-light);
+/* Gold diagonal sheen — static, only opacity varies on hover */
+.decision-btn--raise::after {
+  background: linear-gradient(
+    120deg,
+    rgba(200, 160, 60, 0.18) 0%,
+    rgba(255, 220, 100, 0.08) 35%,
+    transparent 60%
+  );
 }
 
-/* Button amount label (smaller, underneath the action word) */
+/* -------------------------------------------------------
+   Button sub-label (amount line)
+------------------------------------------------------- */
 .decision-btn__amount {
   display: block;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--text-sm);
   font-weight: 400;
   margin-top: var(--space-1);
-  opacity: 0.8;
+  opacity: 0.75;
+  letter-spacing: 0.03em;
 }
 
-/* Pulse animation on the prompt container */
-.decision-prompt--active {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-/* --- Responsive --- */
+/* -------------------------------------------------------
+   Responsive — mobile
+------------------------------------------------------- */
 @media (max-width: 640px) {
   .decision-prompt {
-    padding: var(--space-4);
-  }
-
-  .decision-prompt__header {
-    font-size: var(--text-lg);
+    padding: var(--space-3) var(--space-3);
   }
 
   .decision-prompt__state {
-    gap: var(--space-4);
+    gap: 0;
+  }
+
+  .decision-prompt__stat {
+    padding: var(--space-2) var(--space-3);
+    min-width: 70px;
+  }
+
+  .decision-prompt__stat-value {
+    font-size: var(--text-base);
+  }
+
+  .decision-prompt__stat-value--pot {
+    font-size: var(--text-lg);
   }
 
   .decision-btn {
     font-size: var(--text-base);
-    padding: var(--space-3) var(--space-6);
-    min-width: 100px;
-    min-height: 44px;
+    padding: var(--space-3) var(--space-5);
+    min-width: 96px;
+    min-height: 52px;   /* Keep >= 48px on mobile */
+    flex: 1 1 auto;
   }
 
   .decision-prompt__actions {
-    flex-wrap: wrap;
-    justify-content: center;
+    gap: var(--space-2);
   }
 }

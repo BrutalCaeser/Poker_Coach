@@ -28,13 +28,14 @@ describe('outs counter', () => {
     expect(result.byType.straight).toBe(4);
   });
 
-  it('counts overcard outs (pair improvements)', () => {
-    // AK on 8 5 2 rainbow — ANY card making a pair improves from High Card
-    // 3 Aces + 3 Kings + 3 eights + 3 fives + 3 twos = 15 pair outs
+  it('counts only clean overcard outs (hole-card pairs, not board pairs)', () => {
+    // AK on 8 5 2 rainbow — only pairing the hero's OWN cards is an out.
+    // 3 Aces + 3 Kings = 6. Pairing the board (8/5/2) does NOT help AK-high,
+    // so those 9 board-pairing cards are correctly excluded.
     const hole = parseCards(['Ac', 'Kd']);
     const board = parseCards(['8h', '5c', '2d']);
     const result = countOuts(hole, board);
-    expect(result.byType.pair).toBe(15);
+    expect(result.byType.pair).toBe(6);
   });
 
   it('counts combo draw outs (flush + straight)', () => {

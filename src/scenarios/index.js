@@ -618,7 +618,7 @@ const scenario10 = {
     { label: "Do you have a heart?", value: "NO \u2014 K\u2660K\u2663, no heart blocker", status: "fail" },
     { label: "Villain's line", value: "Called flop (drawing), then leads turn when heart hits", status: "warning" },
     { label: "Villain's likely holdings", value: "Flush very likely (suited connectors, suited Ax), or slow-played set", status: "fail" },
-    { label: "Your outs if behind", value: "~2 outs (remaining Kings) = 4.3% equity", status: "fail" },
+    { label: "Your outs if behind", value: "~0 effective outs — even a King makes only trips, which still loses to a flush", status: "fail" },
     { label: "Pot odds threshold", value: "30.4%", formula: "$1,200 / ($2,750 + $1,200) = 30.4%" },
     { label: "Reverse implied odds", value: "If you call and are behind, you'll face another big river bet", status: "fail" },
     { label: "Verdict", value: "FOLD \u2014 Your overpair is likely crushed. No blocker, strong villain line.", status: "key" },
@@ -628,7 +628,7 @@ const scenario10 = {
 
   takeaway: "Hand strength is relative to the board, not absolute. An overpair is not a strong hand when the flush completes and you don't block it. The most expensive mistakes in poker come from clinging to hands that were strong but are now beaten.",
 
-  coachNotes: "This teaches the hardest skill in poker: laying down strong hands. Key points: (1) KK was the best hand on the flop, but the 2\u2665 changed everything, (2) Villain's line tells a story: called a two-heart flop, then leads when the third heart arrives, (3) Hero has NO heart \u2014 can't block the flush, (4) Even with the best non-flush hand, you're only drawing to 2 outs (4.3%). Mention reverse implied odds: if you call the turn and a blank river comes, villain bets again and you face the same decision. Ask: 'What if you held K\u2665K\u2663 instead? Would that change things?'",
+  coachNotes: "This teaches the hardest skill in poker: laying down strong hands. Key points: (1) KK was the best hand on the flop, but the 2\u2665 changed everything, (2) Villain's line tells a story: called a two-heart flop, then leads when the third heart arrives, (3) Hero has NO heart \u2014 can't block the flush, (4) Even if you hit a King you make only trip Kings — which still loses to a flush, so you are effectively drawing dead. Mention reverse implied odds: if you call the turn and a blank river comes, villain bets again and you face the same decision. Ask: 'What if you held K\u2665K\u2663 instead? Would that change things?'",
 };
 
 // ---------------------------------------------------------------------------

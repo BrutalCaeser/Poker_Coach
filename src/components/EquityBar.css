@@ -1,0 +1,268 @@
+/* ============================================================
+   EquityBar Component Styles
+   Two-bar post-decision reveal — draw equity + showdown equity.
+   Tokens from styles.css; fallbacks to literal hex where noted.
+   ============================================================ */
+
+/* ── Root container ───────────────────────────────────────── */
+
+.equity-bar-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-4);
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gold-border);
+  box-shadow: var(--shadow-md), var(--shadow-glow-gold);
+  animation: slide-up 0.4s ease-out both;
+}
+
+/* Drawing-dead state: muted border, no gold glow */
+.equity-bar-root--dead {
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Section (one bar + labels) ───────────────────────────── */
+
+.eb-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* All-in bar gets a slightly more prominent header */
+.eb-section--allin .eb-section__title {
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+/* ── Section header: title + percentage ───────────────────── */
+
+.eb-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.eb-section__title {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Percentage readout — large, mono, tabular */
+.eb-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: 1;
+  transition: color var(--transition-normal);
+}
+
+.eb-pct--gold  { color: var(--gold); }
+.eb-pct--green { color: var(--green); text-shadow: var(--shadow-glow-green); }
+.eb-pct--dead  { color: var(--text-dim); }
+
+/* ── Track (the horizontal bar) ───────────────────────────── */
+
+.eb-track {
+  position: relative;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  overflow: visible; /* allow marker to poke above */
+}
+
+/* Muted field — fills the full track, sits behind the fill */
+.eb-track__field {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Hero fill — slides in from left */
+.eb-track__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: var(--radius-full);
+  width: 0%;                              /* start state */
+  transition: width 800ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* reduced-motion override applied globally in styles.css */
+}
+
+.eb-track__fill--gold {
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-light));
+  box-shadow: 0 0 12px rgba(200, 160, 60, 0.35);
+}
+
+.eb-track__fill--green {
+  background: linear-gradient(90deg, var(--green-dim), var(--green), var(--green-light));
+  box-shadow: 0 0 12px rgba(90, 173, 90, 0.35);
+}
+
+/* Drawing-dead fill: near-empty, muted red */
+.eb-track__fill--dead {
+  background: linear-gradient(90deg, var(--red-dim), var(--red));
+  box-shadow: none;
+  opacity: 0.4;
+}
+
+/* ── Break-even marker line ───────────────────────────────── */
+
+.eb-track__marker {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  background: var(--text-secondary);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  z-index: var(--z-above);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+}
+
+/* ── Section footer: marker label + verdict text ──────────── */
+
+.eb-section__footer {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 1.4rem;
+  padding-top: var(--space-1);
+}
+
+/* Marker label floats above its position */
+.eb-marker-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  pointer-events: none;
+  /* nudge up so it sits just below the track */
+  top: 0;
+}
+
+/* Pass/fail verdict text — right-aligned */
+.eb-verdict-text {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  animation: verdict-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.eb-verdict-text--pass {
+  color: var(--green);
+}
+
+.eb-verdict-text--fail {
+  color: var(--gold);  /* amber — not catastrophic red; red is only for errors */
+}
+
+/* ── Subtitle ─────────────────────────────────────────────── */
+
+.eb-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  margin: 0;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── Verdict chip (call / fold / raise) ───────────────────── */
+
+.eb-verdict-chip {
+  align-self: center;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-full);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: verdict-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 600ms;
+}
+
+.eb-verdict-chip--call {
+  background: var(--green-bg);
+  color: var(--green-light);
+  border: 1px solid var(--green-border);
+  box-shadow: var(--shadow-glow-green);
+}
+
+.eb-verdict-chip--fold {
+  background: var(--red-bg);
+  color: var(--red-light);
+  border: 1px solid var(--red-border);
+  box-shadow: var(--shadow-glow-red);
+}
+
+.eb-verdict-chip--raise {
+  background: var(--gold-bg);
+  color: var(--gold-light);
+  border: 1px solid var(--gold-border);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+/* ── Optional note ────────────────────────────────────────── */
+
+.eb-note {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+  padding-top: var(--space-1);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Divider between the two sections ─────────────────────── */
+
+.eb-section--showdown:not(.eb-section--allin) {
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .equity-bar-root {
+    padding: var(--space-4) var(--space-3);
+    gap: var(--space-4);
+  }
+
+  .eb-pct {
+    font-size: var(--text-xl);
+  }
+
+  .eb-track {
+    height: 14px;
+  }
+
+  .eb-section__title {
+    font-size: var(--text-xs);
+  }
+}
+
+/* ── Reduced-motion overrides ─────────────────────────────── */
+/*
+  styles.css already sets animation-duration: 0.01ms for all
+  animations under prefers-reduced-motion. The fill transition
+  is also collapsed by the global rule (transition-duration: 0.01ms).
+  We just make sure numbers are visible from the start (handled in JS).
+*/

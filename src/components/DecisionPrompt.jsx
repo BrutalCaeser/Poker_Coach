@@ -37,28 +37,38 @@ export default function DecisionPrompt({
         Action is on you.
       </div>
 
-      <div className="decision-prompt__state">
+      {/* Stats row: pot, facing, stack — tabular-nums, gold pot */}
+      <div className="decision-prompt__state" aria-label="Game state">
         <div className="decision-prompt__stat">
           <span className="decision-prompt__stat-label">Pot</span>
-          <span className="decision-prompt__stat-value decision-prompt__stat-value--pot">
+          <span
+            className="decision-prompt__stat-value decision-prompt__stat-value--pot"
+            aria-label={`Pot: ${formatAmount(pot)}`}
+          >
             {formatAmount(pot)}
           </span>
         </div>
         <div className="decision-prompt__stat">
           <span className="decision-prompt__stat-label">Facing</span>
-          <span className="decision-prompt__stat-value decision-prompt__stat-value--call">
+          <span
+            className="decision-prompt__stat-value decision-prompt__stat-value--call"
+            aria-label={`Facing: ${formatAmount(callAmount)}`}
+          >
             {formatAmount(callAmount)}
           </span>
         </div>
         <div className="decision-prompt__stat">
           <span className="decision-prompt__stat-label">Your Stack</span>
-          <span className="decision-prompt__stat-value">
+          <span
+            className="decision-prompt__stat-value"
+            aria-label={`Stack: ${formatAmount(heroStack)}`}
+          >
             {formatAmount(heroStack)}
           </span>
         </div>
       </div>
 
-      <div className="decision-prompt__actions">
+      <div className="decision-prompt__actions" role="group" aria-label="Your decision">
         <button
           className="decision-btn decision-btn--call"
           onClick={() => onDecision('call')}

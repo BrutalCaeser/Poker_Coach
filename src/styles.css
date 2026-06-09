@@ -1,119 +1,179 @@
 /* ============================================================
    Poker Decisions — Design System & Global Styles
-   Phase 3.1: Refined casino luxury theme
+   Phase 3.2: Premium native feel — depth, motion, colorblind-safe suits
    ============================================================ */
 
 /* --- CSS Custom Properties (Design Tokens) --- */
 :root {
-  /* Backgrounds */
-  --bg-primary: #0a0e14;
-  --bg-secondary: #0d1218;
-  --bg-surface: #131a24;
-  --bg-surface-elevated: #1a2332;
-  --bg-surface-hover: #1f2b3d;
-  --bg-felt: #1a472a;
-  --bg-felt-light: #1f5532;
+  /* ── Backgrounds (elevation ramp — base → surface → elevated → overlay) ── */
+  /* Each step has a subtle cool-blue undertone for depth perception            */
+  --bg-primary:          #080c12;   /* true base — deepest navy-black           */
+  --bg-secondary:        #0b1018;   /* one step up, slight cool tint             */
+  --bg-surface:          #111822;   /* cards / panels — cool-navy surface        */
+  --bg-surface-elevated: #192336;   /* lifted elements — faint cool highlight    */
+  --bg-surface-hover:    #1e2c43;   /* interactive hover state                   */
+  --bg-overlay:          #0d1520e6; /* modal/drawer overlay, 90% opaque          */
 
-  /* Text */
-  --text-primary: #f0ece4;
+  /* Top-lit gradient feel for elevated surfaces (apply as extra background layer) */
+  --bg-surface-sheen: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0%,
+    transparent 60%
+  );
+
+  /* Felt table */
+  --bg-felt:       #153922;   /* richer, darker felt base                        */
+  --bg-felt-light: #1b4d2c;   /* lighter felt highlight                          */
+  --bg-felt-rail:  #0d2418;   /* dark vignette rail around felt edge             */
+
+  /* ── Text ── */
+  --text-primary:   #f0ece4;
   --text-secondary: #c4bfb6;
-  --text-muted: #9a9590;
-  --text-dim: #6a6560;
+  --text-muted:     #9a9590;
+  --text-dim:       #6a6560;
 
-  /* Accent Colors */
-  --gold: #c8a03c;
-  --gold-light: #ddb94e;
-  --gold-dim: #9a7a2e;
-  --gold-bg: rgba(200, 160, 60, 0.08);
+  /* ── Accent Colors ── */
+  --gold:        #c8a03c;
+  --gold-light:  #ddb94e;
+  --gold-dim:    #9a7a2e;
+  --gold-bg:     rgba(200, 160, 60, 0.08);
   --gold-border: rgba(200, 160, 60, 0.25);
 
-  --red: #d94f63;
-  --red-light: #e56b7d;
-  --red-dim: #a83d4e;
-  --red-bg: rgba(217, 79, 99, 0.08);
+  /* Gold sheen gradient — lighter highlight → base gold (use as bg on gold elements) */
+  --gold-sheen: linear-gradient(
+    135deg,
+    #e8c96a 0%,
+    #c8a03c 40%,
+    #a8841e 100%
+  );
+
+  --red:        #d94f63;
+  --red-light:  #e56b7d;
+  --red-dim:    #a83d4e;
+  --red-bg:     rgba(217, 79, 99, 0.08);
   --red-border: rgba(217, 79, 99, 0.25);
 
-  --green: #5aad5a;
-  --green-light: #72c472;
-  --green-dim: #458a45;
-  --green-bg: rgba(90, 173, 90, 0.08);
+  --green:        #5aad5a;
+  --green-light:  #72c472;
+  --green-dim:    #458a45;
+  --green-bg:     rgba(90, 173, 90, 0.08);
   --green-border: rgba(90, 173, 90, 0.25);
 
-  --blue: #5b8ec9;
+  --blue:       #5b8ec9;
   --blue-light: #7aaddf;
-  --blue-dim: #456b96;
+  --blue-dim:   #456b96;
 
-  /* Card Suit Colors */
-  --suit-hearts: #d94f63;
-  --suit-diamonds: #5b8ec9;
-  --suit-clubs: #5aad5a;
-  --suit-spades: #8a9ab5;
+  /* ── Card Suit Colors — colorblind-safe four-color deck ──
+     Corrected for deuteranopia/protanopia confusion axis:
+     • Hearts  = warm red       (#d94f63) — brightest, clearly red
+     • Diamonds = cool cobalt   (#4e8fd4) — distinct blue from spades; lighter
+     • Clubs   = teal-cyan      (#22a89a) — shifted away from green/red axis
+     • Spades  = cool slate     (#a0b4cc) — desaturated cool-grey/silver
+     Grayscale luminance order: Spades > Hearts > Diamonds > Clubs — all distinct.
+  ── */
+  --suit-hearts:   #d94f63;   /* warm red           — L≈46 in grayscale */
+  --suit-diamonds: #4e8fd4;   /* cool cobalt-blue   — L≈57 in grayscale */
+  --suit-clubs:    #22a89a;   /* teal-cyan          — L≈62 in grayscale */
+  --suit-spades:   #a0b4cc;   /* cool silver-slate  — L≈72 in grayscale */
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.05);
-  --shadow-glow-gold: 0 0 20px rgba(200, 160, 60, 0.15);
-  --shadow-glow-green: 0 0 20px rgba(90, 173, 90, 0.15);
-  --shadow-glow-red: 0 0 20px rgba(217, 79, 99, 0.15);
+  /* ── Shadows (original set — retained for compatibility) ── */
+  --shadow-sm:         0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md:         0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg:         0 8px 32px rgba(0, 0, 0, 0.7);
+  --shadow-card:       0 2px 8px rgba(0, 0, 0, 0.55),
+                       0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-glow-gold:  0 0 20px rgba(200, 160, 60, 0.18);
+  --shadow-glow-green: 0 0 20px rgba(90, 173, 90, 0.18);
+  --shadow-glow-red:   0 0 20px rgba(217, 79, 99, 0.18);
 
-  /* Border Radius */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* ── Depth / Elevation Shadows (new — layered for realism) ── */
+  /* Each layer adds: key shadow + ambient fill + edge highlight */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4),
+              0 0 1px rgba(0, 0, 0, 0.3);
+
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.5),
+              0 6px 20px rgba(0, 0, 0, 0.35),
+              0 0 1px rgba(0, 0, 0, 0.4);
+
+  --shadow-3: 0 4px 12px rgba(0, 0, 0, 0.6),
+              0 12px 40px rgba(0, 0, 0, 0.45),
+              0 24px 60px rgba(0, 0, 0, 0.25),
+              0 0 1px rgba(0, 0, 0, 0.5);
+
+  /* Inner top-edge highlight — simulate top-lit surfaces */
+  --shadow-inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* ── Glow tokens (soft colored emphasis) ── */
+  --glow-gold:  0 0 12px rgba(200, 160, 60, 0.35),
+                0 0 32px rgba(200, 160, 60, 0.15);
+  --glow-green: 0 0 12px rgba(90, 173, 90, 0.35),
+                0 0 32px rgba(90, 173, 90, 0.15);
+  --glow-red:   0 0 12px rgba(217, 79, 99, 0.35),
+                0 0 32px rgba(217, 79, 99, 0.15);
+
+  /* ── Border Radius ── */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
   --radius-card: 8px;
   --radius-full: 9999px;
 
-  /* Typography */
+  /* ── Typography ── */
   --font-body: 'Georgia', 'Charter', 'Palatino Linotype', 'Palatino', serif;
   --font-mono: 'Courier New', 'Courier', 'Consolas', monospace;
-  --font-ui: system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-ui:   system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 
   /* Aliases for semantic usage */
   --font-serif: var(--font-body);
-  --font-sans: var(--font-ui);
+  --font-sans:  var(--font-ui);
 
   /* Semantic background aliases */
   --bg-base: var(--bg-primary);
   --bg-card: var(--bg-surface);
   --border-subtle: rgba(255, 255, 255, 0.06);
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
   --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 2rem;
-  --text-4xl: 2.5rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  2rem;
+  --text-4xl:  2.5rem;
 
-  /* Spacing */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
+  /* ── Spacing ── */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
   --space-10: 2.5rem;
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
+  /* ── Transitions (original — retained) ── */
+  --transition-fast:   150ms ease;
   --transition-normal: 250ms ease;
-  --transition-slow: 400ms ease;
+  --transition-slow:   400ms ease;
   --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Z-index scale */
-  --z-base: 0;
-  --z-above: 10;
+  /* ── Motion Tokens (new — for consistent, GPU-friendly motion) ── */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);  /* snappy ease-out (expo)    */
+  --dur-fast:    120ms;   /* micro-interactions, hover highlights              */
+  --dur-base:    220ms;   /* standard state transitions                        */
+  --dur-slow:    420ms;   /* panel slides, reveals                             */
+  --dur-dramatic: 800ms; /* hero entrances, verdict pop                        */
+
+  /* ── Z-index scale ── */
+  --z-base:    0;
+  --z-above:   10;
   --z-overlay: 100;
-  --z-modal: 200;
-  --z-toast: 300;
+  --z-modal:   200;
+  --z-toast:   300;
 }
 
 /* --- CSS Reset & Base --- */
@@ -187,7 +247,7 @@ p {
 a {
   color: var(--gold);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: color var(--dur-fast) var(--ease-out);
 }
 a:hover {
   color: var(--gold-light);
@@ -199,33 +259,38 @@ button {
   border: none;
   background: none;
   color: var(--text-primary);
-  transition: all var(--transition-normal);
+  transition: opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
 }
 
+/* Focus ring — gold, 3px, well-separated */
 button:focus-visible {
   outline: 2px solid var(--gold);
-  outline-offset: 2px;
+  outline-offset: 3px;
   border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 4px rgba(200, 160, 60, 0.2);
 }
 
 a:focus-visible {
   outline: 2px solid var(--gold);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(200, 160, 60, 0.2);
 }
 
 /* Focus ring for non-button interactive elements (scenario cards etc.) */
 [role="button"]:focus-visible {
   outline: 2px solid var(--gold);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(200, 160, 60, 0.2);
 }
 
 /* --- Utility Classes --- */
-.text-gold { color: var(--gold); }
-.text-red { color: var(--red); }
+.text-gold  { color: var(--gold); }
+.text-red   { color: var(--red); }
 .text-green { color: var(--green); }
 .text-muted { color: var(--text-muted); }
 
-.bg-surface { background-color: var(--bg-surface); }
+.bg-surface  { background-color: var(--bg-surface); }
 .bg-elevated { background-color: var(--bg-surface-elevated); }
 
 .sr-only {
@@ -241,15 +306,20 @@ a:focus-visible {
 }
 
 /* --- Felt Texture (for the poker table) --- */
+/* Rail vignette uses a radial overlay on top for deeper edge shadow */
 .felt-bg {
   background:
-    radial-gradient(ellipse at center, #2a6e3f 0%, var(--bg-felt) 70%),
+    radial-gradient(ellipse at center,
+      var(--bg-felt-light) 0%,
+      var(--bg-felt) 55%,
+      var(--bg-felt-rail) 100%
+    ),
     repeating-linear-gradient(
       45deg,
       transparent,
       transparent 2px,
-      rgba(0, 0, 0, 0.03) 2px,
-      rgba(0, 0, 0, 0.03) 4px
+      rgba(0, 0, 0, 0.04) 2px,
+      rgba(0, 0, 0, 0.04) 4px
     );
 }
 
@@ -267,7 +337,7 @@ a:focus-visible {
   }
   100% {
     opacity: 1;
-    transform: translateY(0) rotate(0) scale(1);
+    transform: translateY(0) rotate(0deg) scale(1);
   }
 }
 
@@ -301,7 +371,7 @@ a:focus-visible {
 
 /* Fade in */
 @keyframes fade-in {
-  0% { opacity: 0; }
+  0%   { opacity: 0; }
   100% { opacity: 1; }
 }
 
@@ -329,10 +399,21 @@ a:focus-visible {
   }
 }
 
-/* Pulse (for decision prompt emphasis — uses outline for GPU-friendly animation) */
+/* ── pulse-subtle — FIX: was animating box-shadow (compositor-unfriendly).
+   Now uses a ::before pseudo-element opacity pulse via scale+opacity on a
+   wrapper. For direct use on an element: pulse via opacity of a layered
+   pseudo ring, compositor-only (transform + opacity).
+   The .anim-pulse-subtle utility wraps the element in position:relative and
+   drives a ::before overlay ring via opacity+scale — all GPU composited.    ── */
 @keyframes pulse-subtle {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 160, 60, 0.3); }
-  50% { box-shadow: 0 0 0 6px rgba(200, 160, 60, 0); }
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
 
 /* Verdict check/X animation */
@@ -341,8 +422,11 @@ a:focus-visible {
     opacity: 0;
     transform: scale(0.5);
   }
-  50% {
-    transform: scale(1.2);
+  55% {
+    transform: scale(1.18);
+  }
+  80% {
+    transform: scale(0.96);
   }
   100% {
     opacity: 1;
@@ -362,15 +446,77 @@ a:focus-visible {
   }
 }
 
+/* ── NEW: pulse-glow — opacity pulse for glowing pseudo-elements ── */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.7; }
+}
+
+/* ── NEW: shimmer — horizontal shimmer sweep via transform (GPU only) ── */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 /* --- Animation utility classes --- */
-.anim-card-deal { animation: card-deal 0.4s var(--transition-spring) both; }
-.anim-chips { animation: chips-to-pot 0.35s ease-out both; }
-.anim-slide-up { animation: slide-up 0.35s ease-out both; }
-.anim-fade-in { animation: fade-in 0.3s ease-out both; }
-.anim-slide-right { animation: slide-in-right 0.4s ease-out both; }
-.anim-slide-bottom { animation: slide-in-bottom 0.4s ease-out both; }
-.anim-verdict { animation: verdict-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.anim-step { animation: step-reveal 0.3s ease-out both; }
+.anim-card-deal   { animation: card-deal   var(--dur-slow)    var(--transition-spring) both; }
+.anim-chips       { animation: chips-to-pot var(--dur-base)   var(--ease-out) both; }
+.anim-slide-up    { animation: slide-up     var(--dur-base)   var(--ease-out) both; }
+.anim-fade-in     { animation: fade-in      var(--dur-base)   var(--ease-out) both; }
+.anim-slide-right { animation: slide-in-right var(--dur-slow) var(--ease-out) both; }
+.anim-slide-bottom{ animation: slide-in-bottom var(--dur-slow) var(--ease-out) both; }
+.anim-verdict     { animation: verdict-pop  var(--dur-dramatic) cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.anim-step        { animation: step-reveal  var(--dur-base)   var(--ease-out) both; }
+
+/* pulse-subtle: position:relative required on the parent so ::before rings it */
+.anim-pulse-subtle {
+  position: relative;
+  isolation: isolate;
+}
+.anim-pulse-subtle::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid rgba(200, 160, 60, 0.6);
+  pointer-events: none;
+  animation: pulse-subtle 2s var(--ease-out) infinite;
+  will-change: opacity, transform;
+}
+
+/* ── NEW: shimmer utility — overlay a shimmer sweep on any element ── */
+.anim-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.anim-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.8s var(--ease-out) infinite;
+  will-change: transform;
+}
+
+/* ── NEW: pulse-glow utility — emanating glow on gold/green/red elements ── */
+.anim-glow-gold {
+  position: relative;
+}
+.anim-glow-gold::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at center, rgba(200, 160, 60, 0.3), transparent 70%);
+  pointer-events: none;
+  animation: pulse-glow 2.4s ease-in-out infinite;
+  will-change: opacity;
+}
 
 /* --- Scrollbar Styling --- */
 ::-webkit-scrollbar {
@@ -398,15 +544,24 @@ a:focus-visible {
   color: var(--text-primary);
 }
 
-/* --- Reduced Motion --- */
+/* --- Reduced Motion — fully neutralize ALL animations & transitions --- */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Also kill pseudo-element animations added by utility classes */
+  .anim-pulse-subtle::before,
+  .anim-shimmer::after,
+  .anim-glow-gold::after {
+    animation: none !important;
+    opacity: 0 !important;
   }
 }
 

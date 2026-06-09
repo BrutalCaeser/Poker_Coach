@@ -1,33 +1,85 @@
 /* ============================================================
-   Card Component Styles
-   Face-up: cream background, colored suit, shadow, rounded corners
-   Face-down: dark blue back with subtle pattern
-   Size variants: large (hero), medium (board), small (opponent)
+   Card Component Styles — Casino Luxury Edition
+   Face-up: cream paper with top-light sheen, crisp pips
+   Face-down: deep navy cross-hatch with inner frame
+   Size variants: lg (hero), md (board), sm (opponent), xs (mini)
+   Animate ONLY transform + opacity — GPU-safe.
    ============================================================ */
 
+/* ---------- Base card ---------- */
 .card {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-2, var(--shadow-md));
   user-select: none;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  /* Animate ONLY GPU-composited properties */
+  transition:
+    transform var(--transition-fast, 150ms ease),
+    opacity   var(--transition-fast, 150ms ease);
+  will-change: transform, opacity;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* --- Face-up card --- */
+/* ---------- Face-up card ---------- */
 .card--face-up {
-  background: linear-gradient(145deg, #fffef8 0%, #f5f0e4 50%, #ede7d9 100%);
-  border: 1px solid rgba(180, 170, 150, 0.35);
+  /*
+   * Premium cream paper:
+   * - top-light sheen (highlight from ~10 o'clock)
+   * - slight warm tonal variation toward the foot
+   */
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 252, 0.55) 0%,
+      rgba(255, 255, 252, 0.0) 40%
+    ),
+    linear-gradient(
+      180deg,
+      #fffef8 0%,
+      #faf6ee 45%,
+      #f0ead8 100%
+    );
+  border: 1px solid rgba(190, 178, 154, 0.45);
+}
+
+/*
+ * Gloss sheen: a soft specular highlight on the top half.
+ * Pure overlay — no box-shadow changes (those are non-GPU).
+ */
+.card--face-up::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.06) 35%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ---------- Suit colors ---------- */
+.card--hearts   { --card-color: var(--suit-hearts);   }
+.card--diamonds { --card-color: var(--suit-diamonds); }
+.card--clubs    { --card-color: var(--suit-clubs);    }
+.card--spades   { --card-color: var(--suit-spades);   }
+
+/* ---------- Typography ---------- */
+.card__rank,
+.card__suit,
+.card__corner-rank,
+.card__corner-suit {
+  color: var(--card-color, #2a2018);
+  position: relative;
+  z-index: 2; /* above the sheen ::before layer */
 }
 
 .card__rank {
@@ -40,21 +92,25 @@
   line-height: 1;
 }
 
-/* Rank + suit layout */
+/* Center rank + suit stacked */
 .card__content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 0;
+  position: relative;
+  z-index: 2;
 }
 
-/* Corner pips */
+/* ---------- Corner pips ---------- */
 .card__corner {
   position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
   line-height: 1;
+  gap: 0;
+  z-index: 2;
 }
 
 .card__corner--tl {
@@ -71,74 +127,97 @@
 .card__corner-rank {
   font-family: var(--font-mono);
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .card__corner-suit {
-  line-height: 1;
+  line-height: 0.9;
 }
 
-/* --- Face-down card --- */
+/* ---------- Face-down card — premium navy back ---------- */
 .card--face-down {
+  /*
+   * Multi-layer back:
+   * 1. Fine cross-hatch on a rich navy base
+   * 2. Subtle top-sheen so it reads as a 3D object
+   */
   background:
+    linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      transparent 45%
+    ),
     repeating-linear-gradient(
-      45deg,
-      #1a2744,
-      #1a2744 4px,
-      #1e2e52 4px,
-      #1e2e52 8px
+       45deg,
+       #15244a,
+       #15244a 3px,
+       #1c2f5a 3px,
+       #1c2f5a 6px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.15) 3px,
+      rgba(0, 0, 0, 0.15) 6px
     );
-  border: 1.5px solid #2a3a60;
-  box-shadow: var(--shadow-card), inset 0 0 12px rgba(0, 0, 0, 0.3);
+  border: 1.5px solid #293d6a;
+  box-shadow:
+    var(--shadow-2, var(--shadow-md)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 16px rgba(0, 0, 0, 0.35);
 }
 
+/* Inner decorative frame on the back */
 .card--face-down::after {
   content: '';
   position: absolute;
-  inset: 4px;
-  border-radius: calc(var(--radius-card) - 3px);
-  border: 1px solid rgba(100, 120, 180, 0.15);
+  inset: 5px;
+  border-radius: calc(var(--radius-card) - 2px);
+  border: 1px solid rgba(120, 150, 220, 0.18);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
 }
 
-/* --- Suit colors --- */
-.card--hearts { --card-color: var(--suit-hearts); }
-.card--diamonds { --card-color: var(--suit-diamonds); }
-.card--clubs { --card-color: var(--suit-clubs); }
-.card--spades { --card-color: var(--suit-spades); }
-
-.card__rank,
-.card__suit,
-.card__corner-rank,
-.card__corner-suit {
-  color: var(--card-color, #333);
+/* ---------- Hover — lift only on face-up / hero cards ---------- */
+.card--face-up:hover {
+  transform: translateY(-2px);
 }
 
-/* --- Size variants --- */
+/* Hero (lg) — more presence: gold-tinted glow on hover */
+.card--lg.card--face-up:hover {
+  transform: translateY(-3px);
+  filter: drop-shadow(0 0 8px rgba(200, 160, 60, 0.25));
+}
+
+/* Face-down hover: very subtle lift */
+.card--face-down:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------- Size variants ---------- */
 
 /* Large: hero cards */
 .card--lg {
-  width: 52px;
-  height: 72px;
+  width: 54px;
+  height: 74px;
+  border-radius: calc(var(--radius-card) + 1px);
 }
 
-.card--lg .card__content {
-  gap: 1px;
-}
+.card--lg .card__content { gap: 1px; }
 
-.card--lg .card__rank {
-  font-size: 1.35rem;
-}
+.card--lg .card__rank    { font-size: 1.45rem; }
+.card--lg .card__suit    { font-size: 1.2rem;  }
 
-.card--lg .card__suit {
-  font-size: 1.15rem;
-}
+.card--lg .card__corner-rank { font-size: 0.6rem;  }
+.card--lg .card__corner-suit { font-size: 0.5rem;  }
 
-.card--lg .card__corner-rank {
-  font-size: 0.55rem;
-}
-
-.card--lg .card__corner-suit {
-  font-size: 0.45rem;
-}
+.card--lg .card__corner--tl { top: 4px; left: 4px;  }
+.card--lg .card__corner--br { bottom: 4px; right: 4px; }
 
 /* Medium: board cards */
 .card--md {
@@ -146,21 +225,11 @@
   height: 66px;
 }
 
-.card--md .card__rank {
-  font-size: 1.2rem;
-}
+.card--md .card__rank    { font-size: 1.2rem;  }
+.card--md .card__suit    { font-size: 1rem;    }
 
-.card--md .card__suit {
-  font-size: 1rem;
-}
-
-.card--md .card__corner-rank {
-  font-size: 0.5rem;
-}
-
-.card--md .card__corner-suit {
-  font-size: 0.4rem;
-}
+.card--md .card__corner-rank { font-size: 0.5rem; }
+.card--md .card__corner-suit { font-size: 0.42rem; }
 
 /* Small: opponent cards */
 .card--sm {
@@ -168,17 +237,9 @@
   height: 50px;
 }
 
-.card--sm .card__rank {
-  font-size: 0.85rem;
-}
-
-.card--sm .card__suit {
-  font-size: 0.75rem;
-}
-
-.card--sm .card__corner {
-  display: none;
-}
+.card--sm .card__rank    { font-size: 0.85rem; }
+.card--sm .card__suit    { font-size: 0.75rem; }
+.card--sm .card__corner  { display: none; }
 
 /* Extra small: mini display */
 .card--xs {
@@ -186,33 +247,40 @@
   height: 44px;
 }
 
-.card--xs .card__rank {
-  font-size: 0.75rem;
-}
+.card--xs .card__rank    { font-size: 0.75rem; }
+.card--xs .card__suit    { font-size: 0.65rem; }
+.card--xs .card__corner  { display: none; }
 
-.card--xs .card__suit {
-  font-size: 0.65rem;
-}
-
-.card--xs .card__corner {
-  display: none;
-}
-
-/* --- Card dealing animation --- */
+/* ---------- Deal animation ----------
+   Uses keyframe defined in styles.css (card-deal).
+   Animate only transform + opacity.
+*/
 .card--dealing {
-  animation: card-deal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: card-deal var(--dur-slow, 0.45s) var(--transition-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
 }
 
-/* --- Card group (for displaying a hand) --- */
+@media (prefers-reduced-motion: reduce) {
+  .card--dealing {
+    animation: none;
+  }
+  .card,
+  .card--face-up:hover,
+  .card--lg.card--face-up:hover,
+  .card--face-down:hover {
+    transition: none;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---------- Card group ---------- */
 .card-group {
   display: inline-flex;
   gap: var(--space-2);
   align-items: center;
 }
 
-.card-group--overlap {
-  gap: 0;
-}
+.card-group--overlap { gap: 0; }
 
 .card-group--overlap .card:not(:first-child) {
   margin-left: -16px;
@@ -222,38 +290,29 @@
   z-index: 1;
 }
 
-/* --- Responsive card scaling --- */
+/* ---------- Responsive ---------- */
 @media (max-width: 640px) {
   .card--lg {
-    width: 44px;
-    height: 62px;
+    width: 46px;
+    height: 64px;
   }
 
-  .card--lg .card__rank {
-    font-size: 1.1rem;
-  }
-
-  .card--lg .card__suit {
-    font-size: 0.9rem;
-  }
+  .card--lg .card__rank { font-size: 1.15rem; }
+  .card--lg .card__suit { font-size: 0.95rem; }
 
   .card--md {
     width: 40px;
     height: 56px;
   }
 
-  .card--md .card__rank {
-    font-size: 0.95rem;
-  }
+  .card--md .card__rank { font-size: 0.95rem; }
 
   .card--sm {
     width: 30px;
     height: 42px;
   }
 
-  .card-group {
-    gap: var(--space-1);
-  }
+  .card-group { gap: var(--space-1); }
 }
 
 @media (max-width: 380px) {

@@ -18,7 +18,7 @@
  * @param {Function} props.onNext    - Called when user wants the next scenario
  * @param {Function} [props.onComplete] - Called with { scenarioId, userAction, isCorrect }
  */
-import { useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import { useReducer, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Table from './Table.jsx';
 import ActionFeed from './ActionFeed.jsx';
 import DecisionPrompt from './DecisionPrompt.jsx';
@@ -26,6 +26,7 @@ import MathReveal from './MathReveal.jsx';
 import Card from './Card.jsx';
 import './ScenarioPlay.css';
 import ReferencePanel from './ReferencePanel.jsx';
+import { computeRevealMath } from '../engine/revealMath.js';
 
 // --- Game phases ---
 const PHASE = {
@@ -148,6 +149,51 @@ function getRunningPot(scenario, actionIndex, phase) {
   return pot;
 }
 
+const round1 = (x) => Math.round(x * 10) / 10;
+
+/**
+ * The single-street "draw equity" the lesson teaches — parsed from the
+ * scenario's own curated math steps (the source of truth). Prefers the precise
+ * 1-card equity, falls back to the Rule-of-2 estimate, and returns 0 when there
+ * is no improving draw (e.g. an overpair drawing dead to a completed flush).
+ */
+function parseDrawEquity(scenario) {
+  const pct = (s) => {
+    const m = s && String(s.value).match(/([\d.]+)\s*%/);
+    return m ? parseFloat(m[1]) : null;
+  };
+  const oneCard = scenario.mathSteps.find((s) => /equity \(1 card/i.test(s.label));
+  if (oneCard) { const v = pct(oneCard); if (v != null) return v; }
+  const ruleOf2 = scenario.mathSteps.find((s) => /equity \(rule of 2\)/i.test(s.label));
+  if (ruleOf2) { const v = pct(ruleOf2); if (v != null) return v; }
+  return 0;
+}
+
+/**
+ * Build EquityBar props for the reveal, or null when the bar doesn't fit
+ * (pre-flop, non-all-in spots, where "draw equity this street" has no meaning).
+ * Pot odds, showdown equity and all-in detection are engine-computed; the draw
+ * value is the lesson's own curated single-street equity.
+ */
+function buildEquity(scenario) {
+  const rm = computeRevealMath(scenario);
+  const breakEvenPct = round1(rm.potOddsPct);
+  const verdict = scenario.decision.correctAction;
+  if (rm.isAllIn) {
+    return { mode: 'allin', showdownEquityPct: round1(rm.showdownEquityPct ?? 0), breakEvenPct, verdict };
+  }
+  if (rm.boardLen >= 3) {
+    return {
+      mode: 'draw',
+      drawEquityPct: parseDrawEquity(scenario),
+      showdownEquityPct: round1(rm.showdownEquityPct ?? 0),
+      breakEvenPct,
+      verdict,
+    };
+  }
+  return null;
+}
+
 export default function ScenarioPlay({
   scenario,
   onBack,
@@ -173,6 +219,12 @@ export default function ScenarioPlay({
   // Calculate derived state
   const boardCards = getBoardCards(scenario.actions, state.actionIndex);
   const pot = getRunningPot(scenario, state.actionIndex, state.phase);
+
+  // EquityBar data — computed once when the reveal is shown (runs Monte Carlo).
+  const equity = useMemo(
+    () => (state.phase === PHASE.REVEAL ? buildEquity(scenario) : null),
+    [scenario, state.phase],
+  );
 
   // Is the action feed complete (reached the decision point)?
   const decisionIndex = scenario.actions.findIndex((a) => a.type === 'decision');
@@ -343,6 +395,7 @@ export default function ScenarioPlay({
                     insight={scenario.insight}
                     mathSteps={scenario.mathSteps}
                     takeaway={scenario.takeaway}
+                    equity={equity}
                   />
                 </div>
               )}

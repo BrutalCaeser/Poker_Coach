@@ -4,29 +4,36 @@
  * Static quick-reference card with poker math formulas,
  * common outs, SPR ranges, preflop matchups, and key rules.
  * Shown in the "Reference" tab of the right panel.
+ *
+ * Premium typography upgrade: gold headings with rule lines,
+ * monospace values with tabular-nums, scannable row tables,
+ * colour-coded SPR tiers and draw visibility badges.
  */
 import './ReferencePanel.css';
 
 export default function ReferencePanel() {
   return (
     <div className="reference-panel">
+
+      {/* ── Pot Odds ── */}
       <section className="reference-panel__section">
         <h3 className="reference-panel__heading">Pot Odds</h3>
         <p className="reference-panel__formula">
-          Pot Odds&nbsp;=&nbsp;Call&nbsp;/&nbsp;(Pot&nbsp;+&nbsp;Call)
+          Pot&nbsp;Odds&nbsp;=&nbsp;Call&nbsp;÷&nbsp;(Pot&nbsp;+&nbsp;Call)
         </p>
         <p className="reference-panel__note">
-          Compare to your equity. If equity &gt; pot odds → call.
+          If your equity &gt; pot odds → call is profitable.
         </p>
       </section>
 
+      {/* ── Equity needed by bet size ── */}
       <section className="reference-panel__section">
         <h3 className="reference-panel__heading">Equity Needed by Bet Size</h3>
         <table className="reference-panel__table">
           <thead>
             <tr>
               <td className="reference-panel__col-head">Bet Size</td>
-              <td className="reference-panel__col-head">Equity Needed</td>
+              <td className="reference-panel__col-head" style={{ textAlign: 'right' }}>Equity</td>
             </tr>
           </thead>
           <tbody>
@@ -42,13 +49,63 @@ export default function ReferencePanel() {
         </table>
       </section>
 
+      {/* ── Equity shortcuts ── */}
+      <section className="reference-panel__section">
+        <h3 className="reference-panel__heading">Equity Shortcuts</h3>
+        <table className="reference-panel__table reference-panel__table--shortcuts">
+          <tbody>
+            <tr>
+              <td>Rule of 2</td>
+              <td>Outs × 2</td>
+              <td>1 card to come</td>
+            </tr>
+            <tr>
+              <td>Rule of 4</td>
+              <td>Outs × 4</td>
+              <td>2 cards (all-in only)</td>
+            </tr>
+            <tr>
+              <td>Corrected</td>
+              <td>3 × Outs + 8</td>
+              <td>2 cards (≥ 9 outs)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      {/* ── Common Outs ── */}
+      <section className="reference-panel__section">
+        <h3 className="reference-panel__heading">Common Outs</h3>
+        <table className="reference-panel__table">
+          <tbody>
+            <tr><td>Flush draw</td><td className="reference-panel__mono">9</td></tr>
+            <tr><td>Open-ended straight</td><td className="reference-panel__mono">8</td></tr>
+            <tr><td>Overcards (2 cards)</td><td className="reference-panel__mono">6</td></tr>
+            <tr><td>Gutshot straight</td><td className="reference-panel__mono">4</td></tr>
+            <tr><td>Set (pocket pair)</td><td className="reference-panel__mono">2</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      {/* ── Implied Odds ── */}
+      <section className="reference-panel__section">
+        <h3 className="reference-panel__heading">Implied Odds (F)</h3>
+        <p className="reference-panel__formula">
+          F&nbsp;=&nbsp;Call&nbsp;÷&nbsp;Equity&nbsp;−&nbsp;(Pot&nbsp;+&nbsp;Call)
+        </p>
+        <p className="reference-panel__note">
+          F = extra amount you must win on later streets. If F &gt; remaining stack → fold.
+        </p>
+      </section>
+
+      {/* ── Key Preflop Match-ups ── */}
       <section className="reference-panel__section">
         <h3 className="reference-panel__heading">Key Preflop Match-ups</h3>
         <table className="reference-panel__table reference-panel__table--matchups">
           <thead>
             <tr>
               <td className="reference-panel__col-head">Match-up</td>
-              <td className="reference-panel__col-head">Equity</td>
+              <td className="reference-panel__col-head" style={{ textAlign: 'right' }}>Equity</td>
             </tr>
           </thead>
           <tbody>
@@ -65,51 +122,28 @@ export default function ReferencePanel() {
         </table>
       </section>
 
-      <section className="reference-panel__section">
-        <h3 className="reference-panel__heading">Implied Odds (F)</h3>
-        <p className="reference-panel__formula">
-          F&nbsp;=&nbsp;Call&nbsp;/&nbsp;Equity&nbsp;&minus;&nbsp;(Pot&nbsp;+&nbsp;Call)
-        </p>
-        <p className="reference-panel__note">
-          F is the extra $ you must win on later streets. If F &gt; remaining stack → fold.
-        </p>
-      </section>
-
-      <section className="reference-panel__section">
-        <h3 className="reference-panel__heading">Equity Shortcuts</h3>
-        <table className="reference-panel__table">
-          <tbody>
-            <tr><td>Rule of 2</td><td>Outs × 2</td><td>1 card to come</td></tr>
-            <tr><td>Rule of 4</td><td>Outs × 4</td><td>2 cards (all-in only)</td></tr>
-            <tr><td>Corrected</td><td>3 × Outs + 8</td><td>2 cards (≥9 outs)</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section className="reference-panel__section">
-        <h3 className="reference-panel__heading">Common Outs</h3>
-        <table className="reference-panel__table">
-          <tbody>
-            <tr><td>Flush draw</td><td className="reference-panel__mono">9</td></tr>
-            <tr><td>Open-ended straight</td><td className="reference-panel__mono">8</td></tr>
-            <tr><td>Overcards (2)</td><td className="reference-panel__mono">6</td></tr>
-            <tr><td>Gutshot</td><td className="reference-panel__mono">4</td></tr>
-            <tr><td>Set (pocket pair)</td><td className="reference-panel__mono">2</td></tr>
-          </tbody>
-        </table>
-      </section>
-
+      {/* ── SPR Quick Guide ── */}
       <section className="reference-panel__section">
         <h3 className="reference-panel__heading">SPR Quick Guide</h3>
-        <table className="reference-panel__table">
+        <table className="reference-panel__table reference-panel__table--spr">
           <tbody>
-            <tr><td>SPR &lt; 4</td><td>Commit with top pair+</td></tr>
-            <tr><td>SPR 4–10</td><td>Need two pair / strong draw</td></tr>
-            <tr><td>SPR &gt; 10</td><td>Need sets / nut draws</td></tr>
+            <tr>
+              <td>SPR &lt; 4</td>
+              <td className="reference-panel__spr-commit">Commit — top pair+</td>
+            </tr>
+            <tr>
+              <td>SPR 4–10</td>
+              <td className="reference-panel__spr-cautious">Two pair / strong draw</td>
+            </tr>
+            <tr>
+              <td>SPR &gt; 10</td>
+              <td className="reference-panel__spr-selective">Sets / nut draws only</td>
+            </tr>
           </tbody>
         </table>
       </section>
 
+      {/* ── Set Mining ── */}
       <section className="reference-panel__section">
         <h3 className="reference-panel__heading">Set Mining</h3>
         <p className="reference-panel__formula">
@@ -117,15 +151,29 @@ export default function ReferencePanel() {
         </p>
       </section>
 
+      {/* ── Draw Visibility ── */}
       <section className="reference-panel__section">
         <h3 className="reference-panel__heading">Draw Visibility</h3>
         <ul className="reference-panel__list">
-          <li><span className="reference-panel__vis reference-panel__vis--high">HIGH</span> Overcards (A, K on board)</li>
-          <li><span className="reference-panel__vis reference-panel__vis--medium">MED</span> Flush (third suit card)</li>
-          <li><span className="reference-panel__vis reference-panel__vis--low">LOW</span> Straight (connected cards)</li>
-          <li><span className="reference-panel__vis reference-panel__vis--hidden">HIDDEN</span> Sets / gutshots</li>
+          <li>
+            <span className="reference-panel__vis reference-panel__vis--high">HIGH</span>
+            Overcards (A, K fall on board)
+          </li>
+          <li>
+            <span className="reference-panel__vis reference-panel__vis--medium">MED</span>
+            Flush (third suit card appears)
+          </li>
+          <li>
+            <span className="reference-panel__vis reference-panel__vis--low">LOW</span>
+            Straight (connected board cards)
+          </li>
+          <li>
+            <span className="reference-panel__vis reference-panel__vis--hidden">HIDDEN</span>
+            Sets and gutshot straights
+          </li>
         </ul>
       </section>
+
     </div>
   );
 }

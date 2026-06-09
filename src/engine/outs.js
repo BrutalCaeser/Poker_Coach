@@ -2,7 +2,7 @@
 // grouped by draw type (flush, straight, pair, trips, full house, quads)
 
 import { createDeck, removeCards } from './cards.js';
-import { evaluate7, HAND_RANKS } from './evaluator.js';
+import { evaluate5, evaluate7, HAND_RANKS } from './evaluator.js';
 
 const DRAW_TYPES = {
   FLUSH: 'flush',
@@ -16,12 +16,37 @@ const DRAW_TYPES = {
 };
 
 /**
- * Count outs for the hero's hand given hole cards and board.
- * An "out" is any remaining card that improves the hand to a better category.
+ * Best HAND_RANK achievable from community cards ALONE (no hole cards).
+ * Used to decide whether a candidate card improves the HERO specifically, or
+ * merely improves the board (which helps every player equally — not an out).
+ * board+candidate is 4 cards (flop) or 5 cards (turn); flush/straight need 5.
+ */
+function boardCategory(cards) {
+  if (cards.length >= 5) return evaluate5(cards).rank;
+  const counts = {};
+  for (const c of cards) counts[c.rank] = (counts[c.rank] || 0) + 1;
+  const mult = Object.values(counts).sort((a, b) => b - a);
+  if (mult[0] === 4) return HAND_RANKS.FOUR_OF_A_KIND;
+  if (mult[0] === 3) return HAND_RANKS.THREE_OF_A_KIND;
+  if (mult[0] === 2 && mult[1] === 2) return HAND_RANKS.TWO_PAIR;
+  if (mult[0] === 2) return HAND_RANKS.PAIR;
+  return HAND_RANKS.HIGH_CARD;
+}
+
+/**
+ * Count "clean" outs for the hero given hole cards and board.
+ * An out is a remaining card that raises the hero's hand category AND raises it
+ * beyond what the community cards alone would make — i.e. the hero's hole cards
+ * drive the improvement. Cards that merely pair the board (helping everyone, not
+ * the hero) are NOT counted.
+ *
+ * NOTE: this is a range-INDEPENDENT "category improvement" count. It is not the
+ * same as a curated teaching out-count (which may count only a primary draw),
+ * nor a range-dependent "winning outs" count. See scripts/math-audit.mjs.
  *
  * @param {Array} holeCards - Hero's 2 hole cards
  * @param {Array} board - 3 or 4 community cards (flop or turn)
- * @returns {{ totalOuts, outs: Array<{card, fromRank, toRank, drawType}>, byType: Object }}
+ * @returns {{ totalOuts, currentRank, outs: Array<{card, fromRank, toRank, drawType}>, byType: Object }}
  */
 export function countOuts(holeCards, board) {
   if (board.length < 3 || board.length > 4) {
@@ -39,7 +64,10 @@ export function countOuts(holeCards, board) {
     const newCards = [...allKnown, card];
     const newHand = evaluate7(newCards);
 
-    if (newHand.rank > currentHand.rank) {
+    // Only count cards whose improvement comes from the hero's hole cards, not
+    // from the board improving on its own (board-pairing helps everyone equally).
+    const boardOnlyRank = boardCategory([...board, card]);
+    if (newHand.rank > currentHand.rank && newHand.rank > boardOnlyRank) {
       const drawType = classifyImprovement(currentHand.rank, newHand.rank);
       outs.push({
         card,

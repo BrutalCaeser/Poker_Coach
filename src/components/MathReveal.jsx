@@ -21,6 +21,7 @@
  */
 import { useState, useEffect } from 'react';
 import './MathReveal.css';
+import EquityBar from './EquityBar.jsx';
 
 const STEP_REVEAL_DELAY = 300; // ms between each step (snappy)
 
@@ -31,6 +32,7 @@ export default function MathReveal({
   insight,
   mathSteps,
   takeaway,
+  equity,
 }) {
   const [revealPhase, setRevealPhase] = useState(0);
   // Phase 0: verdict, 1: insight, 2+: math steps (one per phase), final: takeaway
@@ -80,6 +82,13 @@ export default function MathReveal({
       {showInsight && insight && (
         <div className="math-reveal__insight">
           {insight}
+        </div>
+      )}
+
+      {/* 2b. Equity bars — the visual centerpiece (engine-computed) */}
+      {showInsight && equity && (
+        <div className="math-reveal__equity" style={{ margin: 'var(--space-4, 16px) 0 var(--space-2, 8px)' }}>
+          <EquityBar {...equity} />
         </div>
       )}
 

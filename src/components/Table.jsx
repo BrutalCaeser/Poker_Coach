@@ -93,14 +93,28 @@ export default function Table({
                 </div>
               )}
 
-              <div className={`seat__info ${isHero ? 'seat__info--hero' : ''}`}>
+              <div
+                className={`seat__info ${isHero ? 'seat__info--hero' : ''}`}
+                tabIndex={!isHero && player.behaviour ? 0 : undefined}
+                aria-describedby={
+                  !isHero && player.behaviour
+                    ? `behaviour-${seatIdx}`
+                    : undefined
+                }
+              >
                 <span className={`seat__name ${isHero ? 'seat__name--hero' : ''}`}>
                   {player.name}
                 </span>
                 <span className="seat__stack">{formatAmount(player.stack)}</span>
                 <span className="seat__position">{player.position}</span>
                 {!isHero && player.behaviour && (
-                  <span className="seat__behaviour">{player.behaviour}</span>
+                  <span
+                    id={`behaviour-${seatIdx}`}
+                    className="seat__behaviour"
+                    role="tooltip"
+                  >
+                    {player.behaviour}
+                  </span>
                 )}
               </div>
 

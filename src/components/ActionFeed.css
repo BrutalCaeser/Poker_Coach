@@ -1,9 +1,17 @@
 /* ============================================================
    ActionFeed Component Styles
    Sequential action display: info=gray, bets=red, board=gold
-   Each action slides in. The feed scrolls to newest.
+   Each action slides/fades in. GPU-friendly: only transform + opacity.
    ============================================================ */
 
+/* --- Local token fallbacks (parallel agent may provide these) --- */
+.action-feed {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-enter: 320ms;
+  --dur-fast: 150ms;
+}
+
+/* --- Container --- */
 .action-feed {
   display: flex;
   flex-direction: column;
@@ -21,24 +29,57 @@
   width: 4px;
 }
 
+.action-feed::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.action-feed::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+}
+
 /* --- Individual action item --- */
+/* Base entry animation: slide up + fade, GPU-only (transform + opacity) */
+@keyframes af-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .action-item {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   line-height: 1.5;
-  animation: slide-up 0.3s ease-out both;
-  border-left: 3px solid transparent;
+  animation: af-enter var(--dur-enter) var(--ease-out) both;
+  border-left: 2px solid transparent;
+  /* Stagger is applied inline via style.animationDelay */
 }
 
-/* Info actions: neutral gray */
+/* Reduced-motion: kill animation, keep layout */
+@media (prefers-reduced-motion: reduce) {
+  .action-item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- Info actions: neutral, secondary — understated hierarchy --- */
 .action-item--info {
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.02);
   border-left-color: var(--text-dim);
+  font-size: var(--text-xs);
+  letter-spacing: 0.01em;
 }
 
-/* Bet/raise actions: red accent with monospace amount */
+/* --- Bet / raise actions: active betting line --- */
 .action-item--bet {
   background: var(--red-bg);
   border-left-color: var(--red);
@@ -52,26 +93,36 @@
 
 .action-item--bet .action-item__action {
   color: var(--text-secondary);
+  font-style: italic;
 }
 
+/* Monospace amount — visually heavyweight */
 .action-item--bet .action-item__amount {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
+  font-size: var(--text-base);
   color: var(--red-light);
+  margin-left: var(--space-1);
 }
 
-/* Fold action: dimmer */
+/* --- Fold / check actions: dimmed, recedes visually --- */
 .action-item--fold {
-  background: rgba(255, 255, 255, 0.02);
-  border-left-color: var(--text-dim);
-  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.015);
+  border-left-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+  opacity: 0.75;
 }
 
 .action-item--fold .action-item__name {
   color: var(--text-muted);
 }
 
-/* Board actions: gold accent */
+.action-item--fold .action-item__action {
+  color: var(--text-dim);
+}
+
+/* --- Board actions: gold accent, card row --- */
 .action-item--board {
   background: var(--gold-bg);
   border-left-color: var(--gold);
@@ -81,53 +132,76 @@
   align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  /* Slightly longer stagger delay feels dramatic for board reveals */
 }
 
 .action-item--board .action-item__label {
-  color: var(--gold);
+  color: var(--gold-dim);
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  flex-shrink: 0;
 }
-
-/* Decision action: should not render in feed (handled by DecisionPrompt) */
 
 /* --- Advance control --- */
 .action-feed__advance {
   display: flex;
   justify-content: center;
-  padding: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-1);
 }
 
+/* "Continue ▸" — premium, low-key, inviting */
 .action-feed__advance-btn {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: var(--text-muted);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.03);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--gold-dim);
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid rgba(200, 160, 60, 0.2);
+  border-radius: var(--radius-full);
+  background: rgba(200, 160, 60, 0.04);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+  will-change: transform, opacity;
 }
 
 .action-feed__advance-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: var(--text-primary);
+  color: var(--gold-light);
+  border-color: rgba(200, 160, 60, 0.45);
+  background: rgba(200, 160, 60, 0.08);
+  opacity: 1;
+  transform: translateY(-1px);
 }
 
-/* --- Desktop: no artificial height cap, right column scrolls --- */
+.action-feed__advance-btn:active {
+  transform: scale(0.97) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-feed__advance-btn:hover {
+    transform: none;
+  }
+  .action-feed__advance-btn:active {
+    transform: none;
+  }
+}
+
+/* --- Desktop: no artificial height cap --- */
 @media (min-width: 1024px) {
   .action-feed {
     max-height: none;
     overflow-y: visible;
-    flex-shrink: 0; /* Don't compress feed — let right panel scroll */
+    flex-shrink: 0;
   }
 }
 
-/* --- Responsive (small screens) --- */
+/* --- Mobile --- */
 @media (max-width: 640px) {
   .action-feed {
     max-height: 240px;
@@ -137,5 +211,9 @@
   .action-item {
     padding: var(--space-1) var(--space-2);
     font-size: var(--text-xs);
+  }
+
+  .action-item--bet .action-item__amount {
+    font-size: var(--text-sm);
   }
 }

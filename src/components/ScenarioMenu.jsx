@@ -21,12 +21,31 @@ const TIER_LABELS = {
   3: 'Advanced',
 };
 
-function formatConcepts(concepts) {
-  if (!concepts || concepts.length === 0) return '';
-  return concepts
-    .slice(0, 3)
-    .map((c) => c.replace(/-/g, ' '))
-    .join(', ');
+/** Render difficulty as individual filled/empty star spans for CSS color-splitting */
+function DifficultyStars({ difficulty, max = 3 }) {
+  return (
+    <span className="scenario-card__difficulty" aria-label={`Difficulty ${difficulty} of ${max}`}>
+      {Array.from({ length: max }, (_, i) => (
+        <span key={i} className={i < difficulty ? 'star-filled' : 'star-empty'}>
+          {i < difficulty ? '★' : '☆'}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Render up to 3 concept chips individually */
+function ConceptChips({ concepts }) {
+  if (!concepts || concepts.length === 0) return <div className="scenario-card__chips" />;
+  return (
+    <div className="scenario-card__chips">
+      {concepts.slice(0, 3).map((c) => (
+        <span key={c} className="scenario-card__chip">
+          {c.replace(/-/g, ' ')}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 export default function ScenarioMenu({
@@ -60,7 +79,8 @@ export default function ScenarioMenu({
 
   return (
     <div className="scenario-menu">
-      {/* Stats Banner */}
+
+      {/* ── Stats Banner ── */}
       <div className="stats-banner">
         <h1 className="stats-banner__title">
           Poker <span>Decisions</span>
@@ -85,16 +105,20 @@ export default function ScenarioMenu({
         </div>
       </div>
 
-      {/* Progress Bar */}
+      {/* ── Progress Bar ── */}
       {totalCompleted > 0 && (
-        <div className="progress-bar" style={{ maxWidth: 900, margin: '0 auto var(--space-3)' }}>
+        <div className="progress-bar">
+          <div className="progress-bar__label">{progressPct}% complete</div>
           <div className="progress-bar__track">
-            <div className="progress-bar__fill" style={{ transform: `scaleX(${progressPct / 100})` }} />
+            <div
+              className="progress-bar__fill"
+              style={{ transform: `scaleX(${progressPct / 100})` }}
+            />
           </div>
         </div>
       )}
 
-      {/* Navigation Row */}
+      {/* ── Navigation Row ── */}
       <div className="nav-row">
         <button className="nav-btn" onClick={onFreePlay}>
           🃏 Free Play
@@ -104,25 +128,37 @@ export default function ScenarioMenu({
         </button>
       </div>
 
-      {/* Tier Sections */}
+      {/* ── Tier Sections ── */}
       {tiers.map(([difficulty, tierScenarios]) => (
         <section key={difficulty} className="tier-section">
           <h2 className="tier-header">
             <span className="tier-header__stars">
               {'★'.repeat(Number(difficulty))}{'☆'.repeat(3 - Number(difficulty))}
             </span>
-            {TIER_LABELS[Number(difficulty)] || `Tier ${difficulty}`}
+            <span className="tier-header__label">
+              {TIER_LABELS[Number(difficulty)] || `Tier ${difficulty}`}
+            </span>
           </h2>
+
           <div className="scenario-grid">
-            {tierScenarios.map((scenario) => {
+            {tierScenarios.map((scenario, idx) => {
               const result = completed[scenario.id];
               const isCompleted = !!result;
               const isCorrect = result?.correct;
 
+              // Stagger entrance: 40ms per card, cap at 400ms
+              const cardDelay = `${Math.min(idx * 40, 400)}ms`;
+
+              let cardClass = 'scenario-card';
+              if (isCompleted) {
+                cardClass += isCorrect ? ' scenario-card--completed' : ' scenario-card--wrong';
+              }
+
               return (
                 <div
                   key={scenario.id}
-                  className={`scenario-card ${isCompleted ? (isCorrect ? 'scenario-card--completed' : 'scenario-card--wrong') : ''}`}
+                  className={cardClass}
+                  style={{ '--card-delay': cardDelay }}
                   onClick={() => onSelectScenario(scenario.id)}
                   role="button"
                   tabIndex={0}
@@ -135,18 +171,20 @@ export default function ScenarioMenu({
                 >
                   <div className="scenario-card__header">
                     <h3 className="scenario-card__title">{scenario.title}</h3>
-                    <span className="scenario-card__status">
-                      {isCompleted ? (isCorrect ? '✓' : '✗') : ''}
-                    </span>
+                    {isCompleted && (
+                      <span className="scenario-card__status">
+                        {isCorrect ? '✓' : '✗'}
+                      </span>
+                    )}
                   </div>
-                  <p className="scenario-card__concept">
-                    {formatConcepts(scenario.concepts)}
-                  </p>
+
+                  <ConceptChips concepts={scenario.concepts} />
+
                   <div className="scenario-card__footer">
-                    <span className="scenario-card__difficulty">
-                      {'★'.repeat(scenario.difficulty)}{'☆'.repeat(3 - scenario.difficulty)}
-                    </span>
-                    <span className={`scenario-card__category scenario-card__category--${scenario.category}`}>
+                    <DifficultyStars difficulty={scenario.difficulty} />
+                    <span
+                      className={`scenario-card__category scenario-card__category--${scenario.category}`}
+                    >
                       {scenario.category}
                     </span>
                   </div>
