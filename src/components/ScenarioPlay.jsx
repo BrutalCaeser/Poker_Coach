@@ -322,6 +322,10 @@ export default function ScenarioPlay({
   // narration is sparse by design: the booth speaks on the beats that matter and
   // stays quiet through the mechanical bets.
   // ---------------------------------------------------------------------------
+  // True while the commentator is mid-sentence. Gates the feed auto-advance so
+  // narration is never truncated by the next beat.
+  const [narrationBusy, setNarrationBusy] = useState(false);
+
   const currentVo = useMemo(() => {
     const upto = Math.min(state.actionIndex, scenario.actions?.length ?? 0);
     for (let i = upto - 1; i >= 0; i--) {
@@ -356,8 +360,15 @@ export default function ScenarioPlay({
     dispatch({ type: 'ADVANCE', payload: { actions: scenario.actions } });
   }, [scenario.actions]);
 
-  // Auto-advance actions with delay
+  // Auto-advance actions with delay.
+  //
+  // When the commentator is speaking, the AUDIO is the clock. The fixed 1-1.8s
+  // timers below are far shorter than a narration line (7-19s), so without this
+  // gate every line was cut off by the next beat rendering. `narrationBusy` is
+  // reported false on end/pause/error/disable, so silence falls straight back to
+  // the original timer behaviour and the hand can never stall.
   useEffect(() => {
+    if (narrationBusy) return;
     if (state.phase === PHASE.ACTIONS && state.actionIndex < decisionIndex) {
       const currentAction = scenario.actions[state.actionIndex];
       const delay = currentAction?.type === 'board' ? 1800 :
@@ -365,7 +376,7 @@ export default function ScenarioPlay({
       const timer = setTimeout(handleAdvance, delay);
       return () => clearTimeout(timer);
     }
-  }, [state.phase, state.actionIndex, decisionIndex, handleAdvance, scenario.actions]);
+  }, [state.phase, state.actionIndex, decisionIndex, handleAdvance, scenario.actions, narrationBusy]);
 
   // Auto-advance to decision when feed is complete
   useEffect(() => {
@@ -536,6 +547,7 @@ export default function ScenarioPlay({
             commentator={scenario.commentator}
             voId={currentVo?.id}
             text={currentVo?.text}
+            onBusyChange={setNarrationBusy}
           />
 
           {/* Poker table */}

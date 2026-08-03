@@ -84,7 +84,7 @@ function writeFlag(key, value) {
  * @param {string}  [props.voId]       – narration line id for the current beat
  * @param {string}  [props.text]       – that line's text, for captions
  */
-export default function NarrationPlayer({ scenarioId, commentator, voId, text }) {
+export default function NarrationPlayer({ scenarioId, commentator, voId, text, onBusyChange }) {
   const audioRef = useRef(null);
   const [manifest, setManifest] = useState(manifestCache);
   const [enabled, setEnabled] = useState(() => readFlag(LS_ENABLED, false));
@@ -101,6 +101,61 @@ export default function NarrationPlayer({ scenarioId, commentator, voId, text })
 
   const line = manifest?.lines?.[`${scenarioId}/${voId}`] ?? null;
 
+  /*
+   * BUSY REPORTING — the audio is the clock.
+   *
+   * The hand feed used to auto-advance on fixed 1-1.8s timers while these lines
+   * run 7-19s, so every line was cut off by the next beat. "System-paced narrated
+   * replay" only works if the narration sets the pace, so the player reports
+   * whether it is mid-sentence and ScenarioPlay holds the feed while it is.
+   *
+   * Reported false aggressively — on end, pause, error, disable, or a missing
+   * line — because a stuck `true` would freeze the hand permanently. Silence must
+   * always fall back to the old timer behaviour.
+   */
+  const busyRef = useRef(false);
+  const reportBusy = useCallback(
+    (next) => {
+      if (busyRef.current === next) return;
+      busyRef.current = next;
+      onBusyChange?.(next);
+    },
+    [onBusyChange]
+  );
+
+  // Any time we cannot possibly be speaking, make sure the feed is released.
+  useEffect(() => {
+    if (!enabled || !line) reportBusy(false);
+  }, [enabled, line, reportBusy]);
+
+  // Release the feed if this component unmounts mid-line.
+  useEffect(() => () => reportBusy(false), [reportBusy]);
+
+  /**
+   * The single play path. Every failure mode — autoplay block, unsupported
+   * codec, jsdom's unimplemented media methods, a synchronous throw — must end
+   * in "silent, and the feed released", never a stalled hand.
+   */
+  const safePlay = useCallback(
+    ({ reload = false, rewind = false } = {}) => {
+      const el = audioRef.current;
+      if (!el) return;
+      const bail = () => {
+        setPlaying(false);
+        reportBusy(false);
+      };
+      try {
+        if (reload) el.load(); // required after a <source src> change; resets time
+        if (rewind) el.currentTime = 0;
+        const p = el.play();
+        if (p?.catch) p.catch(bail);
+      } catch {
+        bail();
+      }
+    },
+    [reportBusy]
+  );
+
   /* Play the current line whenever it changes and commentary is on.
      NB: an <audio> element does NOT pick up a changed <source src> on its own —
      load() is required, or every beat would replay the first line's audio. */
@@ -108,10 +163,8 @@ export default function NarrationPlayer({ scenarioId, commentator, voId, text })
     const el = audioRef.current;
     if (!el || !enabled || !line) return;
 
-    el.load(); // also resets currentTime to 0
-    const p = el.play();
-    if (p?.catch) p.catch(() => setPlaying(false)); // blocked or unsupported → stay silent
-  }, [line, enabled]);
+    safePlay({ reload: true });
+  }, [line, enabled, safePlay]);
 
   const toggleEnabled = useCallback(() => {
     setEnabled((prev) => {
@@ -119,17 +172,20 @@ export default function NarrationPlayer({ scenarioId, commentator, voId, text })
       writeFlag(LS_ENABLED, next);
       const el = audioRef.current;
       if (!next && el) {
-        el.pause();
+        try {
+          el.pause();
+        } catch {
+          /* jsdom / unsupported — nothing to pause */
+        }
         setPlaying(false);
-      } else if (next && el && line) {
+        reportBusy(false);
+      } else if (next && line) {
         // This click IS the user gesture that unlocks audio for the session.
-        el.load();
-        const p = el.play();
-        if (p?.catch) p.catch(() => setPlaying(false));
+        safePlay({ reload: true });
       }
       return next;
     });
-  }, [line]);
+  }, [line, safePlay, reportBusy]);
 
   const toggleCaptions = useCallback(() => {
     setCaptions((prev) => {
@@ -140,12 +196,9 @@ export default function NarrationPlayer({ scenarioId, commentator, voId, text })
   }, []);
 
   const replay = useCallback(() => {
-    const el = audioRef.current;
-    if (!el || !line) return;
-    el.currentTime = 0;
-    const p = el.play();
-    if (p?.catch) p.catch(() => setPlaying(false));
-  }, [line]);
+    if (!line) return;
+    safePlay({ reload: false, rewind: true });
+  }, [line, safePlay]);
 
   // Nothing baked for this scenario at all → render nothing, hand plays as text.
   const hasAnyAudio =
@@ -219,10 +272,22 @@ export default function NarrationPlayer({ scenarioId, commentator, voId, text })
         <audio
           ref={audioRef}
           preload="auto"
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
-          onError={() => setPlaying(false)}
+          onPlay={() => {
+            setPlaying(true);
+            reportBusy(true); // hold the feed until this line finishes
+          }}
+          onPause={() => {
+            setPlaying(false);
+            reportBusy(false);
+          }}
+          onEnded={() => {
+            setPlaying(false);
+            reportBusy(false); // line finished → let the hand move on
+          }}
+          onError={() => {
+            setPlaying(false);
+            reportBusy(false);
+          }}
         >
           <source src={line.opus} type="audio/ogg; codecs=opus" />
           <source src={line.mp3} type="audio/mpeg" />
