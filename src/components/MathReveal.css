@@ -507,3 +507,66 @@
     padding: var(--space-1) var(--space-3);
   }
 }
+
+/* ============================================================
+   Progressive disclosure of the math   (added 2026-08-02)
+   ============================================================
+   Default view = the author's `status: "key"` steps with derivations hidden
+   (~75% fewer words). One tap restores the full working, so nothing is lost —
+   it just stops being the first thing you have to read.
+   ============================================================ */
+
+/* Supporting prose lifted out of the value column and demoted under the label,
+   so it never competes with the figure for attention. */
+.math-step__detail {
+  font-family: var(--font-body, Georgia, serif);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--text-dim, #6a6560);
+  margin-top: 3px;
+}
+
+/* The disclosure. Quiet by default — it's an escape hatch, not a call to action. */
+.math-reveal__disclose {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-2, 8px);
+  padding: 8px 12px;
+
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-xs, 4px);
+  color: var(--text-muted, #9a9590);
+
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  transition:
+    background var(--dur-base, 220ms) var(--ease-out, ease),
+    border-color var(--dur-base, 220ms) var(--ease-out, ease),
+    color var(--dur-base, 220ms) var(--ease-out, ease);
+}
+
+.math-reveal__disclose:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(200, 160, 60, 0.35);
+  color: var(--gold, #c8a03c);
+}
+
+.math-reveal__disclose:focus-visible {
+  outline: 2px solid var(--gold, #c8a03c);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .math-reveal__disclose { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .math-step__detail { font-size: 0.72rem; }
+  .math-reveal__disclose { font-size: 0.6rem; }
+}

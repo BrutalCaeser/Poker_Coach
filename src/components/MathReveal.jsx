@@ -63,6 +63,49 @@ function compareActions(userAction, proAction, correctAction) {
   return 'pro-right';
 }
 
+/**
+ * Split a step's value into a headline and the supporting prose.
+ *
+ * Authored values mix the two freely: "38.7%" is already a headline, but
+ * "Any remaining spade — 9 by your in-hand count (you can see 4: ...)" buries the
+ * number in a sentence. Rather than rewrite 160 authored, CI-gated data entries,
+ * lift a SHORT leading segment to headline position and demote the rest.
+ *
+ * Deliberately conservative: only splits on an em-dash separator, only when the
+ * head is short enough to read as a value. Anything else renders unchanged.
+ */
+function splitValue(value) {
+  if (typeof value !== 'string') return { head: value, rest: null };
+  const m = value.split(' — ');
+  if (m.length > 1 && m[0].length <= 24) {
+    return { head: m[0], rest: m.slice(1).join(' — ') };
+  }
+  return { head: value, rest: null };
+}
+
+/** One math row: label, value-forward figure, and optional derivation. */
+function MathStepRow({ step, index, showFormula }) {
+  const statusClass = step.status ? `math-step--${step.status}` : 'math-step--default';
+  const { head, rest } = splitValue(step.value);
+
+  return (
+    <div
+      className={`math-step ${statusClass}`}
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      <div className="math-step__left">
+        <div className="math-step__label">{step.label}</div>
+        {/* Supporting prose is demoted under the label, not competing with the figure. */}
+        {rest && <div className="math-step__detail">{rest}</div>}
+        {showFormula && step.formula && (
+          <div className="math-step__formula">{step.formula}</div>
+        )}
+      </div>
+      <div className="math-step__value">{head}</div>
+    </div>
+  );
+}
+
 export default function MathReveal({
   isCorrect,
   userAction,
@@ -76,12 +119,36 @@ export default function MathReveal({
 }) {
   const isV2 = proAction != null;
   const [revealPhase, setRevealPhase] = useState(0);
+  const [showAllSteps, setShowAllSteps] = useState(false);
+
+  /*
+   * PROGRESSIVE DISCLOSURE OF THE MATH
+   * ----------------------------------
+   * The reveal used to render every math step as prose: ~2,089 words across the
+   * product, and a 1,156px-tall "Step-by-Step Breakdown" on the flagship hand.
+   * That is the text wall this product exists to replace.
+   *
+   * The fix needs no data rewrite, because the data already says which steps
+   * matter: the author tagged them `status: "key"`. So the default view is the
+   * key steps with their derivations hidden (523 words, a ~75% reduction), and
+   * one disclosure brings back everything else, losing nothing.
+   *
+   * Fallback: if a scenario tags nothing as key, show all steps rather than an
+   * empty breakdown.
+   */
+  const keySteps = mathSteps.filter((s) => s.status === 'key');
+  const primarySteps = keySteps.length > 0 ? keySteps : mathSteps;
+  const detailSteps = keySteps.length > 0 ? mathSteps.filter((s) => s.status !== 'key') : [];
+  const hasDetail = detailSteps.length > 0 || primarySteps.some((s) => s.formula);
 
   // Phase layout:
   //   V1: 0=verdict, 1=insight, 2..N+1=steps, N+2=takeaway
   //   V2: 0=verdict, 1=beat-card, 2=insight, 3..N+2=steps, N+3=takeaway
   const phasesBeforeSteps = isV2 ? 3 : 2; // verdict + [beat-card] + insight
-  const totalPhases = phasesBeforeSteps + mathSteps.length + 1;
+  // Stagger over the steps actually shown in the cinematic reveal. Detail steps
+  // appear immediately on user request — expanding is a deliberate act, not part
+  // of the reveal, and staggering it would make the disclosure feel broken.
+  const totalPhases = phasesBeforeSteps + primarySteps.length + 1;
 
   useEffect(() => {
     if (revealPhase >= totalPhases) return;
@@ -199,31 +266,39 @@ export default function MathReveal({
         </div>
       )}
 
-      {/* Math Steps */}
+      {/* Math Steps — key steps by default, everything else one tap away */}
       {visibleSteps > 0 && (
         <div className="math-reveal__steps">
-          <div className="math-reveal__steps-header">Step-by-Step Breakdown</div>
-          {mathSteps.slice(0, visibleSteps).map((step, i) => {
-            const statusClass = step.status
-              ? `math-step--${step.status}`
-              : 'math-step--default';
+          <div className="math-reveal__steps-header">The numbers</div>
 
-            return (
-              <div
-                key={i}
-                className={`math-step ${statusClass}`}
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                <div className="math-step__left">
-                  <div className="math-step__label">{step.label}</div>
-                  {step.formula && (
-                    <div className="math-step__formula">{step.formula}</div>
-                  )}
-                </div>
-                <div className="math-step__value">{step.value}</div>
-              </div>
-            );
-          })}
+          {primarySteps.slice(0, visibleSteps).map((step, i) => (
+            <MathStepRow
+              key={`p${i}`}
+              step={step}
+              index={i}
+              showFormula={showAllSteps}
+            />
+          ))}
+
+          {showAllSteps &&
+            detailSteps.map((step, i) => (
+              <MathStepRow key={`d${i}`} step={step} index={0} showFormula />
+            ))}
+
+          {hasDetail && visibleSteps >= primarySteps.length && (
+            <button
+              type="button"
+              className="math-reveal__disclose"
+              onClick={() => setShowAllSteps((v) => !v)}
+              aria-expanded={showAllSteps}
+            >
+              {showAllSteps
+                ? 'Hide the full working'
+                : detailSteps.length > 0
+                ? `Show the full working (${detailSteps.length} more)`
+                : 'Show the full working'}
+            </button>
+          )}
         </div>
       )}
 
