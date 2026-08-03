@@ -126,6 +126,87 @@ function SingleBar({
   );
 }
 
+/* ── natural-frequency helpers ───────────────────────────── */
+
+/**
+ * Percentages are the worst way to show a chance to a low-numeracy learner.
+ * Gigerenzer & Hoffrage (1995) and the icon-array literature are consistent and
+ * heavily replicated: "39 out of 100" is understood where "39%" is not, and the
+ * frequency framing closes the comprehension gap for low-numeracy readers
+ * WITHOUT costing high-numeracy readers anything.
+ *
+ * So the frequency is the primary readout and the percentage is demoted to a
+ * secondary label (kept, because it's the vocabulary the rest of poker uses).
+ */
+function toFreq(pct) {
+  return Math.round(Math.max(0, Math.min(100, pct ?? 0)));
+}
+
+/**
+ * IconArray — 100 dots, `filled` of them lit.
+ *
+ * This exists so the user never has to subtract two percentages in their head.
+ * "38.7% vs 37%" is an arithmetic task; a block of lit dots against a threshold
+ * line is a perceptual one. The threshold is drawn IN the array so "do I have
+ * enough?" is answered by looking, not by calculating.
+ */
+function IconArray({ filled, thresholdAt, tone }) {
+  const COLS = 10;
+  const ROWS = 10;
+  const R = 3.1;
+  const GAP = 8.2;
+  const PAD = 4;
+  const w = PAD * 2 + (COLS - 1) * GAP;
+  const h = PAD * 2 + (ROWS - 1) * GAP;
+
+  const dots = [];
+  for (let i = 0; i < 100; i++) {
+    const row = Math.floor(i / COLS);
+    const col = i % COLS;
+    dots.push(
+      <circle
+        key={i}
+        cx={PAD + col * GAP}
+        cy={PAD + row * GAP}
+        r={R}
+        className={`eb-dot${i < filled ? ` eb-dot--on eb-dot--${tone}` : ''}`}
+      />
+    );
+  }
+
+  // Threshold sits between dots, counted in the same reading order as the array.
+  const tRow = Math.floor(thresholdAt / COLS);
+  const tCol = thresholdAt % COLS;
+  const tx = PAD + tCol * GAP - GAP / 2;
+
+  return (
+    <svg
+      className="eb-array"
+      viewBox={`0 0 ${w} ${h}`}
+      role="img"
+      aria-label={`${filled} out of 100, with the break-even point at ${thresholdAt}`}
+    >
+      {dots}
+      {thresholdAt > 0 && thresholdAt < 100 && (
+        <line
+          className="eb-array__threshold"
+          x1={tx}
+          y1={PAD + tRow * GAP - GAP / 2}
+          x2={tx}
+          y2={PAD + tRow * GAP + GAP / 2}
+        />
+      )}
+    </svg>
+  );
+}
+
+/** "clears by 2" / "short by 4" — the comparison, done FOR the reader. */
+function marginLabel(freq, needFreq) {
+  const diff = freq - needFreq;
+  if (diff === 0) return 'exactly break-even';
+  return diff > 0 ? `clears by ${diff}` : `short by ${Math.abs(diff)}`;
+}
+
 /* ── main component ─────────────────────────────────────── */
 
 export default function EquityBar({
@@ -207,10 +288,23 @@ export default function EquityBar({
         >
           <div className="eb-section__header">
             <span className="eb-section__title">Your equity this street</span>
-            <span className={`eb-pct mono${drawPasses && !drawingDead ? ' eb-pct--green' : !drawingDead ? ' eb-pct--gold' : ' eb-pct--dead'}`}>
-              {drawDisplay.toFixed(1)}%
+            <span
+              className={`eb-freq${drawPasses && !drawingDead ? ' eb-freq--pass' : drawingDead ? ' eb-freq--dead' : ' eb-freq--short'}`}
+            >
+              <span className="eb-freq__n mono">{toFreq(drawDisplay)}</span>
+              <span className="eb-freq__unit">in 100</span>
+              <span className="eb-freq__pct mono">{drawDisplay.toFixed(1)}%</span>
             </span>
           </div>
+
+          {/* The comparison, made perceptual rather than arithmetic. */}
+          {!drawingDead && (
+            <IconArray
+              filled={toFreq(drawEquityPct)}
+              thresholdAt={toFreq(breakEvenPct)}
+              tone={drawPasses ? 'pass' : 'short'}
+            />
+          )}
 
           <SingleBar
             fillPct={drawEquityPct ?? 0}
@@ -228,25 +322,19 @@ export default function EquityBar({
                 className="eb-marker-label"
                 style={{ left: `${Math.min(Math.max(breakEvenPct, 5), 88)}%` }}
               >
-                need {breakEvenPct}%
+                need {toFreq(breakEvenPct)}
               </span>
             )}
 
-            {/* Pass/fail verdict text */}
+            {/* The margin, computed FOR the reader — never two numbers to subtract. */}
             <span
               className={`eb-verdict-text${drawPasses && !drawingDead ? ' eb-verdict-text--pass' : ' eb-verdict-text--fail'}`}
             >
               {drawingDead
-                ? 'Drawing dead — fold'
-                : drawPasses
-                ? '✓ clears the price'
-                : 'short — needs implied odds'}
+                ? 'No cards left to win with'
+                : marginLabel(toFreq(drawEquityPct), toFreq(breakEvenPct))}
             </span>
           </div>
-
-          <p className="eb-subtitle">
-            (chance to improve on the next card — what the call price is measured against)
-          </p>
         </div>
       )}
 
@@ -261,8 +349,10 @@ export default function EquityBar({
               ? 'Your equity (all-in — no more streets)'
               : 'If it goes to showdown'}
           </span>
-          <span className={`eb-pct mono${drawingDead ? ' eb-pct--dead' : ' eb-pct--gold'}`}>
-            {showdownDisplay.toFixed(1)}%
+          <span className={`eb-freq${drawingDead ? ' eb-freq--dead' : ' eb-freq--neutral'}`}>
+            <span className="eb-freq__n mono">{toFreq(showdownDisplay)}</span>
+            <span className="eb-freq__unit">in 100</span>
+            <span className="eb-freq__pct mono">{showdownDisplay.toFixed(1)}%</span>
           </span>
         </div>
 
@@ -282,14 +372,12 @@ export default function EquityBar({
               className="eb-marker-label"
               style={{ left: `${Math.min(Math.max(breakEvenPct, 5), 88)}%` }}
             >
-              need {breakEvenPct}%
+              need {toFreq(breakEvenPct)}
             </span>
             <span
               className={`eb-verdict-text${showdownEquityPct >= breakEvenPct ? ' eb-verdict-text--pass' : ' eb-verdict-text--fail'}`}
             >
-              {showdownEquityPct >= breakEvenPct
-                ? '✓ clears the price'
-                : '✗ doesn’t clear the price'}
+              {marginLabel(toFreq(showdownEquityPct), toFreq(breakEvenPct))}
             </span>
           </div>
         )}
@@ -297,16 +385,10 @@ export default function EquityBar({
         {drawingDead && mode === 'allin' && (
           <div className="eb-section__footer">
             <span className="eb-verdict-text eb-verdict-text--fail">
-              Drawing dead — fold
+              No cards left to win with
             </span>
           </div>
         )}
-
-        <p className="eb-subtitle">
-          {mode === 'allin'
-            ? '(equity all-in — this is the number to measure against pot odds)'
-            : '(full run-out vs villain’s actual hand)'}
-        </p>
       </div>
 
       {/* ── Verdict chip ────────────────────────────────── */}

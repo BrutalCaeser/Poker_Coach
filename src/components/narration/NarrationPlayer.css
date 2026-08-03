@@ -1,0 +1,176 @@
+/* ============================================================
+   NarrationPlayer — the commentary booth control
+   ============================================================
+   Deliberately restrained. This sits above a cinematic table and must not
+   compete with it: one warm affordance, small mono controls, no chrome.
+   Motion is opacity/transform only.
+   ============================================================ */
+
+.np {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  width: 100%;
+}
+
+.np__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  flex-wrap: wrap;
+}
+
+/* ── Primary toggle ───────────────────────────────────────────── */
+.np__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: 7px 14px 7px 11px;
+
+  background: rgba(200, 160, 60, 0.06);
+  border: 1px solid rgba(200, 160, 60, 0.28);
+  border-radius: var(--radius-full, 9999px);
+  color: var(--gold, #c8a03c);
+
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  transition:
+    background var(--dur-base, 220ms) var(--ease-out, ease),
+    border-color var(--dur-base, 220ms) var(--ease-out, ease),
+    opacity var(--dur-base, 220ms) var(--ease-out, ease);
+}
+
+.np__toggle:hover {
+  background: rgba(200, 160, 60, 0.12);
+  border-color: rgba(200, 160, 60, 0.45);
+}
+
+.np__toggle:focus-visible {
+  outline: 2px solid var(--gold, #c8a03c);
+  outline-offset: 2px;
+}
+
+.np__toggle--on {
+  background: rgba(200, 160, 60, 0.14);
+  border-color: rgba(200, 160, 60, 0.5);
+  color: var(--gold-light, #ddb94e);
+}
+
+.np__icon {
+  font-size: 0.6rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.np__label {
+  line-height: 1;
+}
+
+/* ── Mini controls (replay / captions) ───────────────────────── */
+.np__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.np__mini {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 6px;
+
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: var(--radius-xs, 4px);
+  color: var(--text-secondary, #c4bfb6);
+
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  cursor: pointer;
+  transition:
+    background var(--dur-base, 220ms) var(--ease-out, ease),
+    color var(--dur-base, 220ms) var(--ease-out, ease),
+    border-color var(--dur-base, 220ms) var(--ease-out, ease);
+}
+
+.np__mini:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary, #f0ece4);
+}
+
+.np__mini:focus-visible {
+  outline: 2px solid var(--gold, #c8a03c);
+  outline-offset: 2px;
+}
+
+.np__mini:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Captions ON — gold, so the state is not colour-alone (the glyph reads "CC") */
+.np__mini--on {
+  background: rgba(200, 160, 60, 0.12);
+  border-color: rgba(200, 160, 60, 0.4);
+  color: var(--gold, #c8a03c);
+}
+
+/* ── Booth attribution ───────────────────────────────────────── */
+.np__booth {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim, #6a6560);
+  margin-left: auto;
+}
+
+/* ── Caption line (opt-in) ───────────────────────────────────── */
+.np__caption {
+  margin: 0;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+
+  background: rgba(0, 0, 0, 0.35);
+  border-left: 2px solid rgba(200, 160, 60, 0.35);
+  border-radius: var(--radius-xs, 4px);
+
+  font-family: var(--font-body, Georgia, serif);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-secondary, #c4bfb6);
+
+  animation: fade-in var(--dur-base, 220ms) var(--ease-out, ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .np__toggle,
+  .np__mini,
+  .np__caption {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .np__toggle {
+    font-size: 0.66rem;
+    padding: 6px 12px 6px 10px;
+  }
+
+  .np__booth {
+    display: none; /* reclaim the row; the name is already in the toggle label */
+  }
+
+  .np__caption {
+    font-size: 0.8rem;
+  }
+}

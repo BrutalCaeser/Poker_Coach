@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "lines": {
+    "moneymaker-farha-2003/after-turn": {
+      "opus": "/vo/moneymaker-farha-2003/after-turn.4b6eacb4.opus",
+      "mp3": "/vo/moneymaker-farha-2003/after-turn.4b6eacb4.mp3",
+      "dur": 7.525,
+      "hash": "4b6eacb4",
+      "voice": "am_michael",
+      "text": "Moneymaker doesn't just call. He raises, with a hand that hasn't actually made anything yet. Farha calls."
+    },
+    "moneymaker-farha-2003/flop": {
+      "opus": "/vo/moneymaker-farha-2003/flop.f28d39bd.opus",
+      "mp3": "/vo/moneymaker-farha-2003/flop.f28d39bd.mp3",
+      "dur": 12.047,
+      "hash": "f28d39bd",
+      "voice": "am_michael",
+      "text": "Nine, deuce, six. Two spades out there. The hole-card camera tells us Farha has a pair of nines. You have king high and one spade toward a flush. He checks. So do you."
+    },
+    "moneymaker-farha-2003/open": {
+      "opus": "/vo/moneymaker-farha-2003/open.4664c68d.opus",
+      "mp3": "/vo/moneymaker-farha-2003/open.4664c68d.mp3",
+      "dur": 18.703,
+      "hash": "4664c68d",
+      "voice": "am_michael",
+      "text": "Two thousand three. The final table of the World Series of Poker. On one side, Sammy Farha, a professional, cigarette hanging off his lip. On the other, Chris Moneymaker, an accountant from Nashville who bought into this thing for forty dollars online. You're in Moneymaker's seat."
+    },
+    "moneymaker-farha-2003/preflop": {
+      "opus": "/vo/moneymaker-farha-2003/preflop.70213394.opus",
+      "mp3": "/vo/moneymaker-farha-2003/preflop.70213394.mp3",
+      "dur": 6.906,
+      "hash": "70213394",
+      "voice": "am_michael",
+      "text": "You look down at a king and a seven. Nothing special. You raise anyway, just to see what the flop brings."
+    },
+    "moneymaker-farha-2003/river": {
+      "opus": "/vo/moneymaker-farha-2003/river.1f17e2ae.opus",
+      "mp3": "/vo/moneymaker-farha-2003/river.1f17e2ae.mp3",
+      "dur": 9.701,
+      "hash": "1f17e2ae",
+      "voice": "am_michael",
+      "text": "Three of hearts. A blank. No spade, no straight. You have king high, which beats nothing at all. And Farha checks, still holding his pair of nines."
+    },
+    "moneymaker-farha-2003/river-context": {
+      "opus": "/vo/moneymaker-farha-2003/river-context.e1007692.opus",
+      "mp3": "/vo/moneymaker-farha-2003/river-context.e1007692.mp3",
+      "dur": 9.317,
+      "hash": "e1007692",
+      "voice": "am_michael",
+      "text": "So here it is. Nearly two million in the middle, and the only way to win it is to make a professional fold a made hand for his tournament life."
+    },
+    "moneymaker-farha-2003/turn": {
+      "opus": "/vo/moneymaker-farha-2003/turn.93898da3.opus",
+      "mp3": "/vo/moneymaker-farha-2003/turn.93898da3.mp3",
+      "dur": 8.229,
+      "hash": "93898da3",
+      "voice": "am_michael",
+      "text": "There's your third spade. Now you've got a real draw. One more spade makes a flush, and any five or any ten makes you a straight."
+    },
+    "moneymaker-farha-2003/turn-bet": {
+      "opus": "/vo/moneymaker-farha-2003/turn-bet.020eaede.opus",
+      "mp3": "/vo/moneymaker-farha-2003/turn-bet.020eaede.mp3",
+      "dur": 6.863,
+      "hash": "020eaede",
+      "voice": "am_michael",
+      "text": "And Farha fires out more than the size of the pot. He's protecting those nines. This one's yours."
+    }
+  }
+}

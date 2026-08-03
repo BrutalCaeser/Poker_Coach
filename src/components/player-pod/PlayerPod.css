@@ -56,6 +56,14 @@
   padding: 6px 14px 6px 6px;
 
   min-width: 220px;
+  /* Universal guard: the pod is a fixed-size broadcast nameplate and must never
+     grow to fit its content. Without this cap an absolutely-positioned (shrink-
+     to-fit) seat lets a long name/behaviour blow the bar out to 1000px+ and drag
+     the whole seat off-screen. 380px comfortably fits "CHRIS MONEYMAKER" (the
+     longest current name, needs ~165px identity width after avatar+stack) with
+     room for longer pro names still to be added; the real overflow guard is
+     .pp-behaviour's own max-width below, not this number. */
+  max-width: 380px;
   height: 56px;
 
   /*
@@ -341,7 +349,9 @@
   color: var(--gold-light, #ddb94e);
 }
 
-/* Playing style descriptor */
+/* Playing style descriptor — a SHORT tag ("Aggressive pro"), never a paragraph.
+   max-width caps its contribution to the pod's shrink-to-fit width so a long
+   value truncates cleanly instead of blowing the bar out. */
 .pp-behaviour {
   font-family: var(--font-ui, system-ui, sans-serif);
   font-size: 0.58rem;
@@ -351,6 +361,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 170px;
 }
 
 /* ── Stack zone ──────────────────────────────────────────────── */

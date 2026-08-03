@@ -57,6 +57,22 @@ export const moneymakerFarha2003 = {
   difficulty: 3,
   category: "tournament",
 
+  // ── COMMENTARY BOOTH ─────────────────────────────────────────────────────────
+  // Cal Brennan is an ORIGINAL, FICTIONAL commentator. He is deliberately not
+  // modelled on, and must never be made to imitate, any real broadcaster or
+  // player. Rationale (see outputs/2026-07-27_poker-decisions-voice-first-thesis.md):
+  // synthesizing a real person's voice is a right-of-publicity tort (Midler v.
+  // Ford; Waits v. Frito-Lay; TN ELVIS Act; CA SB 683) and no disclaimer cures it.
+  // The booth framing is also the more faithful choice — the 2003 broadcast was
+  // narrated from the booth, not by the players.
+  commentator: {
+    id: "cal-brennan",
+    name: "Cal Brennan",
+    role: "Commentary booth",
+    voice: "am_michael", // Kokoro voice id; swappable
+    fictional: true,
+  },
+
   // hero = index 0 (Moneymaker) — the USER plays his seat
   players: [
     {
@@ -74,8 +90,10 @@ export const moneymakerFarha2003 = {
       position: "BB", // heads-up: big blind = out of position postflop
       stack: 3770000,
       cards: ["Qs", "9h"],
-      behaviour:
-        "Aggressive-Professional — Farha is a world-class pro with a Camel cigarette between his lips. He's been controlling the heads-up match but is now a large chip underdog. Expects Moneymaker to be scared. Known for calling with bluff-catchers but also for respecting big bets.",
+      behaviour: "Aggressive pro · respects big bets",
+      // Full broadcast "read" — surfaced in the coaching/read panel, NOT the pod.
+      read:
+        "Farha is a world-class pro with a Camel cigarette between his lips. He's been controlling the heads-up match but is now a large chip underdog. Expects Moneymaker to be scared. Known for calling with bluff-catchers but also for respecting big bets.",
       isPro: true,
       avatarId: "farha",
       country: "US",
@@ -99,6 +117,10 @@ export const moneymakerFarha2003 = {
     {
       type: "info",
       text: "2003 WSOP Main Event final table — heads-up. Blinds $20,000/$40,000 with $5,000 ante. You are Chris Moneymaker: an amateur accountant from Nashville who won his seat in a $40 online satellite. Sammy Farha — a seasoned pro — leads the Camel-dangling poker world by 3.7 million chips. You've closed the gap and now hold the chip lead.",
+      vo: {
+        id: "open",
+        text: "Two thousand three. The final table of the World Series of Poker. On one side, Sammy Farha, a professional, cigarette hanging off his lip. On the other, Chris Moneymaker, an accountant from Nashville who bought into this thing for forty dollars online. You're in Moneymaker's seat.",
+      },
     },
     {
       type: "info",
@@ -109,6 +131,10 @@ export const moneymakerFarha2003 = {
     {
       type: "info",
       text: "You're dealt K♠ 7♥ on the button. A king-high hand with no real connection — a speculative raise to see a flop.",
+      vo: {
+        id: "preflop",
+        text: "You look down at a king and a seven. Nothing special. You raise anyway, just to see what the flop brings.",
+      },
     },
     {
       type: "bet",
@@ -134,6 +160,10 @@ export const moneymakerFarha2003 = {
     {
       type: "info",
       text: "Flop: 9♠ 2♦ 6♠ — Farha flopped top pair (pair of 9s, Q kicker). You have king-high with a backdoor spade draw (K♠ gives you one spade to the board's two). Farha checks.",
+      vo: {
+        id: "flop",
+        text: "Nine, deuce, six. Two spades out there. The hole-card camera tells us Farha has a pair of nines. You have king high and one spade toward a flush. He checks. So do you.",
+      },
     },
     {
       type: "bet",
@@ -153,6 +183,10 @@ export const moneymakerFarha2003 = {
       type: "info",
       text:
         "Turn: 8♠ — A third spade arrives. The board is now 9♠ 2♦ 6♠ 8♠. You now have a live King-high flush draw (K♠ + 4 board spades would give you 5 spades — but wait: you only have one spade, so you need ONE more spade to complete the flush). You also have straight outs: any 5 or T makes a straight (5-6-7-8-9 or 6-7-8-9-T). This is a genuine drawing hand with real equity.",
+      vo: {
+        id: "turn",
+        text: "There's your third spade. Now you've got a real draw. One more spade makes a flush, and any five or any ten makes you a straight.",
+      },
     },
     {
       type: "bet",
@@ -164,6 +198,10 @@ export const moneymakerFarha2003 = {
     {
       type: "info",
       text: "Farha leads for 300,000 into a 210,000 pot (1.43× pot). He's protecting his pair of 9s on a three-spade board. Pot is now 510,000. You face a 300,000 call.",
+      vo: {
+        id: "turn-bet",
+        text: "And Farha fires out more than the size of the pot. He's protecting those nines. This one's yours.",
+      },
     },
     {
       type: "decision",
@@ -178,6 +216,10 @@ export const moneymakerFarha2003 = {
       type: "info",
       text:
         "You raise to 800,000 — a semi-bluff. You have real equity (flush draw + straight draw) but also put maximum pressure on Farha's pair. Farha calls 500,000 more.",
+      vo: {
+        id: "after-turn",
+        text: "Moneymaker doesn't just call. He raises, with a hand that hasn't actually made anything yet. Farha calls.",
+      },
     },
     {
       type: "bet",
@@ -198,6 +240,10 @@ export const moneymakerFarha2003 = {
       type: "info",
       text:
         "River: 3♥ — A brick. The board is 9♠ 2♦ 6♠ 8♠ 3♥. The fourth spade never came. Your straight never got there. You have king-high — nothing. Farha still holds top pair (pair of 9s). He checks.",
+      vo: {
+        id: "river",
+        text: "Three of hearts. A blank. No spade, no straight. You have king high, which beats nothing at all. And Farha checks, still holding his pair of nines.",
+      },
     },
     {
       type: "bet",
@@ -210,6 +256,10 @@ export const moneymakerFarha2003 = {
       type: "info",
       text:
         "Farha checks into a 1,810,000 pot. He's left himself approximately 2,880,000 behind. You hold king-high — zero showdown value. This is a pure bluff spot. The question: can you make Farha fold a pair of 9s for his tournament life?",
+      vo: {
+        id: "river-context",
+        text: "So here it is. Nearly two million in the middle, and the only way to win it is to make a professional fold a made hand for his tournament life.",
+      },
     },
     {
       type: "decision",
@@ -285,7 +335,7 @@ export const moneymakerFarha2003 = {
         },
         {
           label: "Why MC (38.7%) < exact formula (43.5%)",
-          value: "Several spade outs also improve Farha's hand (she holds Q♠). The engine's MC correctly accounts for villain improving — the formula does not.",
+          value: "Several spade outs also improve Farha's hand (he holds Q♠). The engine's MC correctly accounts for villain improving — the formula does not.",
           status: "warning",
         },
         {
@@ -367,18 +417,18 @@ export const moneymakerFarha2003 = {
         },
         {
           label: "Farha's pot odds (to call)",
-          value: "61.4% — she needs 61.4% equity to break even",
+          value: "61.4% — he needs 61.4% equity to break even",
           formula: "2,880,000 / (1,810,000 + 2,880,000) = 61.4%",
         },
         {
-          label: "Farha's actual equity if she calls",
+          label: "Farha's actual equity if he calls",
           value: "100.0% (pair of 9s beats king-high)",
           formula: "Engine evaluate7: Farha wins at showdown",
           status: "warning",
         },
         {
           label: "The fold-equity paradox",
-          value: "Farha SHOULD call (she has 100% equity vs a missed draw). But she can't know that — Moneymaker's bet also represents a flopped/turned flush (K♠ on a three-spade board).",
+          value: "Farha SHOULD call (he has 100% equity vs a missed draw). But he can't know that — Moneymaker's bet also represents a flopped/turned flush (K♠ on a three-spade board).",
           status: "warning",
         },
         {
@@ -397,7 +447,7 @@ export const moneymakerFarha2003 = {
         "This is a pure bluff with 0% showdown equity. The only reason to bet is fold equity. Moneymaker's overbet of 1.59× pot is perfectly sized: large enough to make a pair-of-9s call terrifying (Farha risks her tournament life with one pair), but the bet also tells a coherent story — K♠ on a 9♠ 6♠ 8♠ board is the nut flush draw. Farha correctly identified it as 'probably a missed draw' and still folded, showing how powerful the bet sizing and board texture were.",
 
       takeaway:
-        "When you have 0% equity at showdown, you have two choices: check and lose, or bluff. The size of a bluff must be large enough to make calling uncomfortable — here 1.59× pot means Farha needs >61.4% confidence she's ahead. Against a plausible flush-draw narrative on a triple-spade board, that threshold is hard to reach. The lesson: pick bluffing spots where your hand represents a credible strong holding, and bet big enough to make calling require near-certainty.",
+        "When you have 0% equity at showdown, you have two choices: check and lose, or bluff. The size of a bluff must be large enough to make calling uncomfortable — here 1.59× pot means Farha needs >61.4% confidence he's ahead. Against a plausible flush-draw narrative on a triple-spade board, that threshold is hard to reach. The lesson: pick bluffing spots where your hand represents a credible strong holding, and bet big enough to make calling require near-certainty.",
     },
   ],
 
@@ -457,5 +507,5 @@ export const moneymakerFarha2003 = {
 
   // ── COACH NOTES ──────────────────────────────────────────────────────────────
   coachNotes:
-    "This hand teaches two linked concepts: (1) the semi-bluff raise, and (2) the pure river bluff. Walk the student through the turn first — they have a genuine draw (engine: 38.7% equity, 20 outs) and the raise is correct because fold equity + draw equity dominate a marginal call. Then shift to the river: the draw missed. Equity = 0%. The only winning action is the bluff. Emphasize the break-even fold rate (61.4%) and why the overbet size is justified: on a four-spade board with K♠ in hand, the story 'I have a flush' is maximally credible. Ask the student: 'If you check the river, what happens?' (Farha bets, you fold, you lose.) 'If you bet small — say 500k — is that better?' (No: Farha calls trivially with pair of 9s at better pot odds.) The overbet or fold binary is the key insight. Historical note: Farha told reporters she suspected the bluff — 'You must have missed your flush draw' — yet she still folded. This is the meta-lesson: even a CORRECT READ doesn't always translate to a correct call, because the pot odds required (61.4%) exceed a reasonable bluff-to-value ratio estimate.",
+    "This hand teaches two linked concepts: (1) the semi-bluff raise, and (2) the pure river bluff. Walk the student through the turn first — they have a genuine draw (engine: 38.7% equity, 20 outs) and the raise is correct because fold equity + draw equity dominate a marginal call. Then shift to the river: the draw missed. Equity = 0%. The only winning action is the bluff. Emphasize the break-even fold rate (61.4%) and why the overbet size is justified: on a four-spade board with K♠ in hand, the story 'I have a flush' is maximally credible. Ask the student: 'If you check the river, what happens?' (Farha bets, you fold, you lose.) 'If you bet small — say 500k — is that better?' (No: Farha calls trivially with pair of 9s at better pot odds.) The overbet or fold binary is the key insight. Historical note: Farha told reporters he suspected the bluff — 'You must have missed your flush draw' — yet he still folded. This is the meta-lesson: even a CORRECT READ doesn't always translate to a correct call, because the pot odds required (61.4%) exceed a reasonable bluff-to-value ratio estimate.",
 };

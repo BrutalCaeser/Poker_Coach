@@ -109,22 +109,34 @@ export default function MathReveal({
 
   return (
     <div className="math-reveal" aria-live="polite" aria-label="Decision analysis">
-      {/* 1. Verdict */}
+      {/*
+        1. Verdict — TASK-FIRST, never ego-first.
+        Kluger & DeNisi's meta-analysis (607 effect sizes) found feedback helps on
+        average (d≈0.41) but that over a THIRD of feedback interventions actively
+        make performance worse — and the driver is feedback aimed at the self
+        rather than the task. "✗ Not quite." is precisely that failure mode: it
+        grades the person before saying anything about the hand.
+        So: no ✗, no "Correct!/Not quite." Lead with what the maths says, and
+        report the user's choice as information rather than as a mark.
+      */}
       {showVerdict && (
         <div className="math-reveal__verdict">
           <div
             className={`verdict__icon ${isCorrect ? 'verdict__icon--correct' : 'verdict__icon--incorrect'}`}
             aria-hidden="true"
           >
-            {isCorrect ? '✓' : '✗'}
+            {isCorrect ? '✓' : '→'}
           </div>
           <div className={`verdict__text ${isCorrect ? 'verdict__text--correct' : 'verdict__text--incorrect'}`}>
-            {isCorrect ? 'Correct!' : 'Not quite.'}
+            {isCorrect
+              ? `The maths backs your ${userAction}.`
+              : `The maths favours ${correctAction} here.`}
           </div>
           <div className="verdict__detail">
-            You chose to <strong>{userAction}</strong>.
-            {!isCorrect && (
-              <> The mathematically correct play was to <strong>{correctAction}</strong>.</>
+            {isCorrect ? (
+              <>Here&apos;s why <strong>{userAction}</strong> is the play.</>
+            ) : (
+              <>You played <strong>{userAction}</strong>. Here&apos;s what the numbers say.</>
             )}
           </div>
         </div>

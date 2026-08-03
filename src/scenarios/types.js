@@ -41,6 +41,13 @@
  *                                     Empty array if cards are unknown/face-down.
  * @property {string|null}  [behaviour] - Short descriptor of opponent play-style
  *                                        (e.g., "Tight-Aggressive"). Null for the hero.
+ *                                        Rendered in the PlayerPod nameplate — keep
+ *                                        it a short tag, NOT a paragraph (the pod
+ *                                        bar is a fixed-width broadcast graphic).
+ * @property {string}       [read]      - Optional full scouting-report paragraph for
+ *                                        real-hand opponents (e.g., a WSOP pro's
+ *                                        table image/tendencies). For narrative/coach
+ *                                        panels only — never passed to PlayerPod.
  */
 
 /**

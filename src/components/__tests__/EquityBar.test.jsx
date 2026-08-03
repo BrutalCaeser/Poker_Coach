@@ -145,7 +145,10 @@ describe('mode="allin"', () => {
 // ── 3. Pass case: draw ≥ breakEven ──────────────────────────
 
 describe('pass case (drawEquityPct >= breakEvenPct)', () => {
-  it('shows the ✓ "clears the price" affordance', () => {
+  // Natural-frequency redesign (2026-07-27): the footer now states the MARGIN
+  // ("clears by 10") rather than a bare pass/fail, so the reader never has to
+  // subtract two percentages. 35 - 25 = 10.
+  it('states the margin over break-even instead of a bare pass/fail', () => {
     render(
       <EquityBar
         mode="draw"
@@ -156,9 +159,28 @@ describe('pass case (drawEquityPct >= breakEvenPct)', () => {
       />
     );
 
-    expect(
-      screen.getByText(/✓ clears the price/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/clears by 10/i)).toBeInTheDocument();
+  });
+
+  it('leads with the natural-frequency readout ("35 in 100")', () => {
+    render(
+      <EquityBar
+        mode="draw"
+        drawEquityPct={35}
+        showdownEquityPct={50}
+        breakEvenPct={25}
+        verdict="call"
+      />
+    );
+
+    // Frequency is primary; "in 100" appears for both the draw and showdown bars.
+    expect(screen.getAllByText(/in 100/i).length).toBeGreaterThan(0);
+    const array = screen.getAllByRole('img', { name: /out of 100/i });
+    expect(array.length).toBeGreaterThan(0);
+    expect(array[0]).toHaveAttribute(
+      'aria-label',
+      expect.stringContaining('break-even point at 25')
+    );
   });
 
   it('aria-label mentions "clears the price" for a passing draw', () => {
@@ -180,7 +202,8 @@ describe('pass case (drawEquityPct >= breakEvenPct)', () => {
 // ── 4. Fail case: draw < breakEven ──────────────────────────
 
 describe('fail case (drawEquityPct < breakEvenPct)', () => {
-  it('shows "short — needs implied odds" text', () => {
+  // 20 (rounded from 19.6) - 25 = short by 5.
+  it('states how far short of break-even the draw is', () => {
     render(
       <EquityBar
         mode="draw"
@@ -191,9 +214,7 @@ describe('fail case (drawEquityPct < breakEvenPct)', () => {
       />
     );
 
-    expect(
-      screen.getByText(/short — needs implied odds/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/short by 5/i)).toBeInTheDocument();
   });
 
   it('aria-label mentions "needs implied odds" for a failing draw', () => {

@@ -26,6 +26,7 @@ import MathReveal from './MathReveal.jsx';
 import Card from './Card.jsx';
 import './ScenarioPlay.css';
 import ReferencePanel from './ReferencePanel.jsx';
+import NarrationPlayer from './narration/NarrationPlayer.jsx';
 import { computeRevealMath, computeRevealMathForDP } from '../engine/revealMath.js';
 
 // --- Game phases ---
@@ -316,6 +317,20 @@ export default function ScenarioPlay({
   const pot = getRunningPot(scenario, state.actionIndex, state.phase, state.currentDpIndex);
 
   // ---------------------------------------------------------------------------
+  // Current narration line — the most recent VISIBLE action carrying a `vo`.
+  // Walking backwards (rather than requiring every action to have a line) means
+  // narration is sparse by design: the booth speaks on the beats that matter and
+  // stays quiet through the mechanical bets.
+  // ---------------------------------------------------------------------------
+  const currentVo = useMemo(() => {
+    const upto = Math.min(state.actionIndex, scenario.actions?.length ?? 0);
+    for (let i = upto - 1; i >= 0; i--) {
+      if (scenario.actions[i]?.vo) return scenario.actions[i].vo;
+    }
+    return null;
+  }, [scenario.actions, state.actionIndex]);
+
+  // ---------------------------------------------------------------------------
   // EquityBar data
   // ---------------------------------------------------------------------------
   const equity = useMemo(() => {
@@ -513,6 +528,16 @@ export default function ScenarioPlay({
       <div className="scenario-play__content">
         {/* ===== LEFT COLUMN: Table + Decision + Opponent Reveal + Next ===== */}
         <div className="scenario-play__left">
+          {/* Commentary booth — opt-in narration for the current beat.
+              Renders nothing when no audio is baked for this scenario, so the
+              15 curated v1 hands are untouched. */}
+          <NarrationPlayer
+            scenarioId={scenario.id}
+            commentator={scenario.commentator}
+            voId={currentVo?.id}
+            text={currentVo?.text}
+          />
+
           {/* Poker table */}
           <div className="scenario-play__table-section">
             <Table

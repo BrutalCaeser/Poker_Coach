@@ -266,3 +266,86 @@
   is also collapsed by the global rule (transition-duration: 0.01ms).
   We just make sure numbers are visible from the start (handled in JS).
 */
+
+/* ============================================================
+   Natural-frequency readout + icon array   (added 2026-07-27)
+   ============================================================
+   Percentages are demoted to a secondary label and the frequency
+   ("39 in 100") is promoted to primary, because frequency framing is
+   understood by low-numeracy readers where percentages are not
+   (Gigerenzer & Hoffrage 1995; icon-array literature).
+
+   The 100-dot array exists so "do I have enough?" is answered by LOOKING
+   at dots against a threshold line, not by subtracting two percentages.
+   ============================================================ */
+
+.eb-freq {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+/* The number carries the meaning — big, tabular, colour-coded. */
+.eb-freq__n {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.eb-freq__unit {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-muted, #9a9590);
+}
+
+/* Percentage kept but subordinate — it's the vocabulary poker uses elsewhere. */
+.eb-freq__pct {
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim, #6a6560);
+  margin-left: 2px;
+}
+
+.eb-freq--pass    .eb-freq__n { color: var(--green, #5fa777); }
+.eb-freq--short   .eb-freq__n { color: var(--gold, #c8a03c); }
+.eb-freq--neutral .eb-freq__n { color: var(--gold, #c8a03c); }
+.eb-freq--dead    .eb-freq__n { color: var(--text-dim, #6a6560); }
+
+/* ── Icon array ───────────────────────────────────────────── */
+.eb-array {
+  display: block;
+  width: 100%;
+  max-width: 232px;
+  height: auto;
+  margin: 0 0 var(--space-3, 12px);
+}
+
+.eb-dot {
+  fill: rgba(255, 255, 255, 0.10);
+  transition: fill var(--dur-base, 220ms) var(--ease-out, ease);
+}
+
+.eb-dot--on.eb-dot--pass  { fill: var(--green, #5fa777); }
+.eb-dot--on.eb-dot--short { fill: var(--gold, #c8a03c); }
+
+/* Threshold tick — cream, matching the printed betting line on the felt. */
+.eb-array__threshold {
+  stroke: rgba(240, 230, 180, 0.85);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eb-dot { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .eb-freq__n { font-size: 1.3rem; }
+  .eb-array { max-width: 100%; }
+}
