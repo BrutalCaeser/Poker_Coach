@@ -1,6 +1,46 @@
 {
   "version": 1,
   "lines": {
+    "lesson-moneymaker-turn/bet": {
+      "opus": "/vo/lesson-moneymaker-turn/bet.9292ea59.opus",
+      "mp3": "/vo/lesson-moneymaker-turn/bet.9292ea59.mp3",
+      "dur": 4.154,
+      "hash": "9292ea59",
+      "voice": "am_michael",
+      "text": "Farha bets three hundred thousand. More than the pot. Your move."
+    },
+    "lesson-moneymaker-turn/flop": {
+      "opus": "/vo/lesson-moneymaker-turn/flop.c2d23c5c.opus",
+      "mp3": "/vo/lesson-moneymaker-turn/flop.c2d23c5c.mp3",
+      "dur": 7.887,
+      "hash": "c2d23c5c",
+      "voice": "am_michael",
+      "text": "Nine, deuce, six, with two spades. You've got king high and one spade of your own. Farha checks. You check behind."
+    },
+    "lesson-moneymaker-turn/open": {
+      "opus": "/vo/lesson-moneymaker-turn/open.bd5ada9f.opus",
+      "mp3": "/vo/lesson-moneymaker-turn/open.bd5ada9f.mp3",
+      "dur": 13.967,
+      "hash": "bd5ada9f",
+      "voice": "am_michael",
+      "text": "Two thousand three. The final table of the World Series of Poker. Sammy Farha is a professional. Chris Moneymaker is an accountant who won his seat online for forty dollars. Tonight, you're in his chair."
+    },
+    "lesson-moneymaker-turn/preflop": {
+      "opus": "/vo/lesson-moneymaker-turn/preflop.86d82343.opus",
+      "mp3": "/vo/lesson-moneymaker-turn/preflop.86d82343.mp3",
+      "dur": 5.583,
+      "hash": "86d82343",
+      "voice": "am_michael",
+      "text": "You look down at king, seven. Nothing special. You raise anyway, and Farha calls."
+    },
+    "lesson-moneymaker-turn/turn": {
+      "opus": "/vo/lesson-moneymaker-turn/turn.1e8348e2.opus",
+      "mp3": "/vo/lesson-moneymaker-turn/turn.1e8348e2.mp3",
+      "dur": 8.143,
+      "hash": "1e8348e2",
+      "voice": "am_michael",
+      "text": "The eight of spades. Three spades on the board now, so one more gives you a flush. And any five or any ten makes you a straight."
+    },
     "moneymaker-farha-2003/after-turn": {
       "opus": "/vo/moneymaker-farha-2003/after-turn.4b6eacb4.opus",
       "mp3": "/vo/moneymaker-farha-2003/after-turn.4b6eacb4.mp3",

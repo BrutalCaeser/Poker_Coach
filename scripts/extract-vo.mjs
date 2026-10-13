@@ -87,6 +87,28 @@ async function main() {
     }
   }
 
+  // v3 lessons carry their narration in `replay[].vo` (plain strings). Same
+  // content-hash rules, namespaced by lesson id so they can't collide.
+  const lessonMod = await import(resolve(ROOT, 'src/lesson/script.js'));
+  for (const lesson of [lessonMod.LESSON].filter(Boolean)) {
+    const voice = lesson.commentator?.voice ?? DEFAULT_VOICE;
+    const speed = lesson.commentator?.speed ?? DEFAULT_SPEED;
+    for (const step of lesson.replay ?? []) {
+      if (!step.vo || !step.id) continue;
+      const k = `${lesson.id}/${step.id}`;
+      if (seen.has(k)) {
+        console.error(`extract-vo: DUPLICATE vo id "${k}"`);
+        process.exit(1);
+      }
+      seen.add(k);
+      const text = step.vo.trim();
+      jobs.push({
+        key: k, scenarioId: lesson.id, voId: step.id, text, voice, speed,
+        lang: DEFAULT_LANG, hash: contentHash({ text, voice, speed }),
+      });
+    }
+  }
+
   // Deterministic order so the job list and manifest are git-stable.
   jobs.sort((a, b) => a.key.localeCompare(b.key));
 
