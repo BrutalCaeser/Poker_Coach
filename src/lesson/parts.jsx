@@ -53,7 +53,11 @@ export function Card({ card, size = 'md', faceDown = false, dim = false, flip = 
  * @param base  chips already in the pot
  * @param mine  what you'd add (drawn as a gold slice); 0 = just the pot
  */
-export function PotRing({ base, mine = 0, size = 168, stroke = 14, center, sub }) {
+/**
+ * `live`: follow a dragged value instantly (no easing), used when the slice is
+ * the learner's own estimate rather than the answer being revealed.
+ */
+export function PotRing({ base, mine = 0, size = 168, stroke = 14, center, sub, live = false, tone = 'you' }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const total = base + mine;
@@ -67,10 +71,10 @@ export function PotRing({ base, mine = 0, size = 168, stroke = 14, center, sub }
     const id = requestAnimationFrame(() => setAnimated(target));
     return () => cancelAnimationFrame(id);
   }, [target, reduced]);
-  const share = reduced ? target : animated;
+  const share = reduced || live ? target : animated;
 
   return (
-    <div className="lx-ring" style={{ width: size, height: size }}>
+    <div className={`lx-ring${live ? ' lx-ring--live' : ''} lx-ring--${tone}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <circle className="lx-ring__track" cx={size / 2} cy={size / 2} r={r} strokeWidth={stroke} />
         <circle

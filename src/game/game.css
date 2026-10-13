@@ -1,0 +1,405 @@
+/* ==========================================================================
+   Poker Decisions v3 — game layer (path, drills, feedback sheet)
+   ==========================================================================
+   Built ONLY on lesson.css tokens: the same 6 type sizes, the same palette
+   (gold = you, mint = wins, terracotta = doesn't win), the same radii.
+
+   Balance rule: the visual carries the meaning, words label it. Questions are
+   one line. Feedback leads with a cue (card chip, equation, symbol) and keeps
+   the full explanation behind "Why?".
+   ========================================================================== */
+
+/* ── top bar ───────────────────────────────────────────────── */
+.gx-top { grid-template-columns: 40px 1fr 40px; }
+.gx-back {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-pill);
+  color: var(--ink-2);
+}
+.gx-back:hover { background: var(--fill); color: var(--ink); }
+.gx-top__step { justify-self: center; font-size: var(--t-12); color: var(--ink-3); text-align: center; }
+.gx-top__sub { color: var(--ink-2); }
+.gx-top .gx-pips,
+.gx-top .gx-tag,
+.gx-count { justify-self: end; }
+.gx-count { font-size: var(--t-12); color: var(--ink-3); }
+
+.gx-pips { display: inline-flex; gap: 4px; align-items: center; }
+.gx-pips i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--ink-3);
+  transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.gx-pips i.is-on { background: var(--win); border-color: var(--win); }
+
+.gx-tag {
+  display: inline-block;
+  font-size: var(--t-12);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--fill);
+  color: var(--ink-2);
+}
+.gx-tag--due { margin-left: auto; background: var(--you-soft); color: var(--you); }
+
+.gx-main { padding-bottom: 24px; }
+
+/* ── path ──────────────────────────────────────────────────── */
+.gx-path .lx-h1 { margin-bottom: 8px; }
+.gx-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--t-14);
+  color: var(--ink-3);
+  margin-bottom: 24px;
+}
+
+.gx-nodes { position: relative; display: flex; flex-direction: column; gap: 2px; margin-bottom: 20px; }
+.gx-nodes::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 20px;
+  bottom: 20px;
+  width: 1px;
+  background: var(--line);
+}
+.gx-node__btn {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 56px;
+  padding: 8px 8px 8px 0;
+  border-radius: var(--r-m);
+  text-align: left;
+  transition: background var(--fast) var(--ease);
+}
+.gx-node__btn:not(:disabled):hover { background: var(--fill); }
+.gx-node__dot {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: var(--t-14);
+  font-weight: 600;
+  color: var(--ink-2);
+  position: relative;
+  z-index: 1;
+}
+.gx-node__text { display: flex; flex-direction: column; gap: 4px; }
+.gx-node__title { font-weight: 600; }
+.gx-node__learn { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-14); color: var(--ink-3); }
+
+.gx-node.is-current .gx-node__dot { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.gx-node.is-mastered .gx-node__dot,
+.gx-node.is-due .gx-node__dot { background: var(--win-soft); border-color: var(--win); color: var(--win); }
+.gx-node.is-locked .gx-node__dot { color: var(--ink-3); }
+.gx-node.is-locked .gx-node__title { color: var(--ink-3); font-weight: 500; }
+
+.gx-boss {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  border-radius: var(--r-m);
+  text-align: left;
+  background: radial-gradient(120% 120% at 0% 0%, var(--felt) 0%, var(--felt-2) 100%);
+  box-shadow: inset 0 0 0 1px rgba(242, 238, 229, 0.08);
+  transition: transform var(--fast) var(--ease);
+}
+.gx-boss:not(:disabled):active { transform: scale(0.99); }
+.gx-boss__year { font-family: var(--serif); font-size: var(--t-14); color: var(--ink-3); letter-spacing: 0.06em; }
+.gx-boss__title { font-family: var(--serif); font-size: var(--t-28); line-height: 1.1; }
+.gx-boss__cta { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: var(--t-14); font-weight: 600; }
+.gx-boss.is-locked { background: var(--fill); box-shadow: inset 0 0 0 1px var(--line); }
+.gx-boss.is-locked .gx-boss__title { color: var(--ink-3); }
+.gx-boss.is-locked .gx-boss__cta { color: var(--ink-3); font-weight: 500; }
+
+.gx-soon { margin-top: 20px; font-size: var(--t-14); color: var(--ink-3); }
+
+/* ── drills ────────────────────────────────────────────────── */
+/* The drill fills the screen: question and visuals at the top, the quiet
+   hint anchored just above the action, no dead band in between. */
+.gx-drill { flex: 1; display: flex; flex-direction: column; gap: 12px; animation: lx-in var(--slow) var(--ease) both; }
+.gx-drill .lx-h1 { margin-bottom: 0; }
+
+
+/* ── the table: fixed stage, four places ───────────────────── */
+/*
+ * Geometry never changes between steps: seats keep their height, the river
+ * slot is exactly a card, the pot ring keeps its size. A step only lights one
+ * place (where the answer lands) and fades what it doesn't need.
+ */
+.gx-q { font-size: var(--t-28); }
+
+.gx-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-radius: 24px;
+  background: radial-gradient(110% 90% at 50% 42%, var(--felt) 0%, var(--felt-2) 100%);
+  box-shadow: inset 0 0 0 1px rgba(242, 238, 229, 0.06);
+}
+
+.gx-seat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 4px 6px;
+  border-radius: var(--r-m);
+}
+.gx-seat__cards { display: flex; gap: 4px; flex: none; }
+.gx-seat__meta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.gx-seat__name { font-size: var(--t-12); color: var(--ink-3); }
+.gx-seat__name--you { color: var(--you); font-weight: 600; }
+.gx-seat__bet { color: var(--ink-2); font-weight: 600; }
+.gx-seat__name--you .gx-seat__bet { color: var(--you); }
+
+/* Our read: an ASSUMPTION about his best hand, so it is drawn as a dashed tag,
+   never as cards. The board card his pair is made with gets the same dash. */
+.gx-read {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px dashed rgba(242, 238, 229, 0.4);
+  border-radius: var(--r-pill);
+  font-size: var(--t-12);
+  white-space: nowrap;
+}
+.gx-read__k { color: var(--ink-3); }
+.gx-read__v { color: var(--ink); font-weight: 600; }
+
+
+.gx-board { display: flex; justify-content: center; gap: 6px; }
+.gx-bcard { position: relative; display: inline-block; line-height: 0; }
+.gx-bcard.is-read::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px dashed rgba(242, 238, 229, 0.6);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+/* the river slot: exactly one card's footprint */
+.gx-river {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  aspect-ratio: 5 / 7;
+  border-radius: var(--r-s);
+  border: 1.5px dashed rgba(242, 238, 229, 0.35);
+  color: var(--ink-2);
+  line-height: 1;
+}
+.gx-river__q { font-family: var(--serif); font-size: var(--t-20); color: var(--ink-3); }
+.gx-river__n { font-size: var(--t-20); font-weight: 600; color: var(--ink); }
+.gx-river.is-long .gx-river__n { font-size: var(--t-12); }
+.gx-river__sub { margin-top: 3px; font-size: var(--t-12); color: var(--ink-3); }
+.gx-river.is-win { border-style: solid; border-color: var(--win); background: var(--win-soft); }
+.gx-river.is-win .gx-river__n { color: var(--win); }
+
+.gx-pot { display: flex; justify-content: center; border-radius: 50%; }
+
+/* lit: where this step's answer lands. dim: what it doesn't need. */
+.gx-stage [data-zone] { transition: opacity var(--slow) var(--ease), box-shadow var(--slow) var(--ease); }
+.gx-stage .is-dim { opacity: 0.38; }
+.gx-seat.is-lit { box-shadow: 0 0 0 1px rgba(242, 238, 229, 0.22), 0 0 24px rgba(242, 238, 229, 0.06); }
+.gx-river.is-lit:not(.is-win) { border-color: rgba(242, 238, 229, 0.75); box-shadow: 0 0 18px rgba(242, 238, 229, 0.12); }
+.gx-pot.is-lit .lx-ring { filter: drop-shadow(0 0 10px rgba(227, 177, 79, 0.18)); }
+
+.gx-tray { display: flex; flex-direction: column; gap: 12px; }
+
+/* the pot as an equation of chips (price tray) */
+.gx-eq { display: flex; align-items: flex-end; justify-content: center; gap: 10px; }
+.gx-eq__term { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-bottom: 4px; }
+.gx-eq__term b { font-size: var(--t-20); font-weight: 600; }
+.gx-eq__term small { font-size: var(--t-12); color: var(--ink-3); }
+.gx-eq__term.is-measured { border-bottom: 2px solid var(--you); }
+.gx-eq__term.is-measured b { color: var(--you); }
+.gx-eq__term.is-his { border-bottom-color: var(--ink); }
+.gx-eq__term.is-his b { color: var(--ink); }
+.gx-eq__op { font-size: var(--t-20); color: var(--ink-3); padding-bottom: 22px; }
+
+.gx-visual { display: flex; justify-content: center; }
+.gx-tip { font-size: var(--t-12); color: var(--ink-3); text-align: center; }
+
+.gx-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.gx-stat { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: var(--r-m); background: var(--fill); }
+.gx-stat__label { font-size: var(--t-14); color: var(--ink-2); }
+.gx-stat__n { font-family: var(--serif); font-size: var(--t-40); line-height: 1; }
+.gx-stat__n small { font-family: var(--sans); font-size: var(--t-12); color: var(--ink-3); }
+
+.gx-choices { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.gx-choices .lx-act { min-height: 56px; }
+
+/* estimate slider */
+.gx-est { display: flex; flex-direction: column; gap: 8px; }
+.gx-est__label { font-size: var(--t-12); color: var(--ink-3); }
+.gx-est__readout { display: flex; align-items: baseline; gap: 6px; }
+.gx-est__n { font-family: var(--serif); font-size: var(--t-40); line-height: 1; min-width: 2ch; }
+.gx-est__unit { font-size: var(--t-14); color: var(--ink-3); }
+.gx-est__row { display: flex; align-items: center; gap: 10px; }
+.gx-est__row input { flex: 1; }
+.gx-est__row input.is-untouched::-webkit-slider-thumb { background: var(--ink-3); }
+.gx-est__row input.is-untouched::-moz-range-thumb { background: var(--ink-3); }
+.gx-est__nudge {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--fill);
+  font-size: var(--t-20);
+  line-height: 1;
+  color: var(--ink-2);
+}
+.gx-est__nudge:disabled { opacity: 0.35; }
+.gx-est__ends { display: flex; justify-content: space-between; padding: 0 50px; font-size: var(--t-12); color: var(--ink-3); }
+
+/* hint: one quiet word until asked for */
+.gx-hint { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 8px; }
+.gx-hint__toggle {
+  align-self: flex-start;
+  font-size: var(--t-14);
+  color: var(--ink-3);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+.gx-hint__toggle:hover { color: var(--ink-2); }
+.gx-hint__text { padding: 12px 14px; border-radius: var(--r-m); background: var(--fill); font-size: var(--t-14); color: var(--ink-2); }
+
+/* ── feedback sheet (where the action button was) ──────────── */
+.lx-foot--sheet { padding: 0; background: none; }
+.gx-sheet {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 16px calc(14px + env(safe-area-inset-bottom));
+  border-radius: 18px 18px 0 0;
+  background: var(--bg-2);
+  box-shadow: 0 -1px 0 var(--line), 0 -12px 32px rgba(0, 0, 0, 0.45);
+  animation: gx-up 280ms var(--ease) both;
+}
+@keyframes gx-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.gx-sheet__head { display: flex; align-items: center; gap: 10px; }
+.gx-sheet__icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; }
+.gx-sheet.is-right .gx-sheet__icon { background: var(--win-soft); color: var(--win); }
+.gx-sheet.is-off .gx-sheet__icon { background: var(--no-soft); color: var(--no); }
+.gx-sheet__verdict { font-weight: 600; }
+.gx-sheet.is-right .gx-sheet__verdict { color: var(--win); }
+.gx-sheet.is-off .gx-sheet__verdict { color: var(--no); }
+.gx-sheet__why {
+  margin-left: auto;
+  font-size: var(--t-14);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+.gx-sheet__value { font-size: var(--t-20); font-weight: 600; }
+.gx-sheet__more { font-size: var(--t-14); color: var(--ink-2); }
+
+.gx-cues { display: flex; flex-direction: column; gap: 6px; }
+.gx-cues li { display: flex; align-items: center; gap: 10px; font-size: var(--t-14); color: var(--ink-2); }
+.gx-cue {
+  display: inline-grid;
+  place-items: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-s);
+  font-size: var(--t-14);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.gx-cues .is-missed .gx-cue { border: 1px dashed var(--win); color: var(--win); }
+.gx-cues .is-wrong .gx-cue { border: 1px solid var(--no); background: var(--no-soft); color: var(--no); }
+.gx-cues .is-neutral .gx-cue { background: var(--fill); color: var(--ink); }
+
+/* ── the full line, scored step by step ────────────────────── */
+.gx-line { display: flex; flex-direction: column; gap: 12px; animation: lx-in var(--slow) var(--ease) both; }
+.gx-line__list { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.gx-line__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 12px 18px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  font-size: var(--t-16);
+}
+.gx-line__list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+}
+.gx-line__list li.is-right::before { background: var(--win); }
+.gx-line__list li.is-off::before { background: var(--no); }
+.gx-line__name { color: var(--ink-2); }
+.gx-line__val { font-weight: 600; }
+.gx-line__note { font-size: var(--t-14); color: var(--ink-3); }
+
+.gx-btn--cleared { background: var(--win); color: var(--bg); }
+
+/* ── cleared + summary ─────────────────────────────────────── */
+.gx-cleared,
+.gx-summary {
+  min-height: calc(100dvh - 56px - 120px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  animation: lx-in var(--slow) var(--ease) both;
+}
+.gx-cleared__mark {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--win-soft);
+  color: var(--win);
+  margin-bottom: 12px;
+}
+.gx-unlock { display: flex; flex-direction: column; gap: 2px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.gx-unlock__label { font-size: var(--t-12); color: var(--ink-3); }
+.gx-unlock b { font-weight: 600; }
+
+.gx-sumlist { display: flex; flex-direction: column; margin: 12px 0; border-top: 1px solid var(--line); }
+.gx-sumlist div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: var(--t-14); }
+.gx-sumlist dt { color: var(--ink-3); }
+.gx-sumlist dd { margin: 0; text-align: right; font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-sheet { animation: none; }
+}

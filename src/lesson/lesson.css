@@ -14,6 +14,12 @@
               below the content it moves you past. No boxes inside boxes.
    ========================================================================== */
 
+/* The page around the app. v3 never loads the old global stylesheet, so the
+   canvas is set here: no default 8px body margin, and no white edges or
+   white overscroll on a light-mode browser. */
+html:has(.lx) { background: #0c0e0d; color-scheme: dark; }
+body:has(.lx) { margin: 0; }
+
 .lx {
   /* palette */
   --bg: #0c0e0d;
@@ -125,6 +131,22 @@
   padding: 0 16px;
   background: linear-gradient(var(--bg) 70%, transparent);
 }
+/* Once content scrolls under the bar, it frosts over it with a hairline
+   (html[data-scrolled], set by useScrollFlag). At rest it stays a soft fade. */
+.lx-top::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 1px 0 var(--line);
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease);
+  pointer-events: none;
+}
+:root[data-scrolled] .lx-top::before { opacity: 1; }
 .lx-top__mark {
   display: grid;
   place-items: center;
@@ -287,7 +309,7 @@
 .lx-cold__year {
   font-family: var(--serif);
   font-size: var(--t-14);
-  color: var(--you);
+  color: var(--ink-3); /* gold is reserved for YOU */
   letter-spacing: 0.08em;
 }
 .lx-cold__title {
@@ -453,6 +475,12 @@
   stroke-linecap: butt;
   transition: stroke-dasharray 900ms var(--ease);
 }
+/* Your estimate: follows the finger exactly, drawn as an outline-weight slice
+   so it never reads as the revealed answer. */
+.lx-ring--live .lx-ring__mine { transition: none; }
+.lx-ring--guess .lx-ring__mine { stroke: rgba(227, 177, 79, 0.55); }
+.lx-ring--win .lx-ring__mine { stroke: var(--win); }
+.lx-ring--his .lx-ring__mine { stroke: var(--ink); } /* his money: never gold */
 .lx-ring__center {
   position: absolute;
   inset: 0;

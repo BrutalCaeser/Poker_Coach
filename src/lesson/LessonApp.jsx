@@ -18,6 +18,7 @@ import {
 } from './lessonMath.js';
 import { Card, PotRing, ShareBars, DeckGrid, LongRun } from './parts.jsx';
 import { useBooth } from './useBooth.js';
+import { useFonts } from './fonts.js';
 import './lesson.css';
 
 const BEATS = ['price', 'count', 'compare', 'longrun', 'twist', 'breakit', 'pro', 'tool'];
@@ -47,23 +48,11 @@ function writeFlag(k, v) {
   }
 }
 
-function useFonts() {
-  useEffect(() => {
-    if (document.getElementById('lx-fonts')) return;
-    const pre = document.createElement('link');
-    pre.rel = 'preconnect';
-    pre.href = 'https://fonts.gstatic.com';
-    pre.crossOrigin = '';
-    const l = document.createElement('link');
-    l.id = 'lx-fonts';
-    l.rel = 'stylesheet';
-    l.href =
-      'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap';
-    document.head.append(pre, l);
-  }, []);
-}
-
-export default function LessonApp() {
+/**
+ * @param {Function} [onExit]      leave the lesson (embedded in the game: back to the path)
+ * @param {Function} [onComplete]  called once the lesson reaches its final beat
+ */
+export default function LessonApp({ onExit, onComplete } = {}) {
   useFonts();
   const L = LESSON;
   const booth = useBooth(L.id);
@@ -203,7 +192,8 @@ export default function LessonApp() {
           captionsOn={captionsOn}
           onVoice={toggleVoice}
           onCaptions={toggleCaptions}
-          onRestart={restart}
+          onRestart={onExit ?? restart}
+          embedded={Boolean(onExit)}
         />
 
         <main className="lx-main" ref={mainRef}>
@@ -239,10 +229,6 @@ export default function LessonApp() {
                       { tone: 'you', text: `${money(L.turn.bet)} you’d add` },
                     ]} total={`${money(finalPot)} pot`} />
                   </div>
-                  <p className="lx-body">
-                    To stay in you add {money(L.turn.bet)}, and the pot becomes {money(finalPot)}.
-                    Your {money(L.turn.bet)} is {need}% of it.
-                  </p>
                   <p className="lx-key">So you need to win more than <b className="t-you">{need} times in 100</b>.</p>
                 </>
               )}
@@ -255,7 +241,7 @@ export default function LessonApp() {
                   </h1>
                   {!checked && (
                     <p className="lx-body">
-                      He bet big, so give him {L.read.words}. <b>Tap every card that beats it.</b>
+                      Give him a pair of nines. <b>Tap every card that beats it.</b>
                     </p>
                   )}
                   <div className="lx-visual">
@@ -271,8 +257,7 @@ export default function LessonApp() {
                   {checked && grade && <CountFeedback grade={grade} />}
                   {checked && (
                     <p className="lx-key">
-                      {hero.wins} of the {hero.unseen} cards you can’t see win. Just under 2 in 5:
-                      about <b className="t-win">{have} in 100</b>.
+                      {hero.wins} of {hero.unseen} win: about <b className="t-win">{have} in 100</b>.
                     </p>
                   )}
                 </>
@@ -285,10 +270,6 @@ export default function LessonApp() {
                   <div className="lx-visual">
                     <ShareBars need={need} have={have} />
                   </div>
-                  <p className="lx-body">
-                    Both numbers are a share of 100. You win {have} times in 100 and only need {need}.
-                    Your share of the wins is a little bigger than your share of the cost.
-                  </p>
                   <p className="lx-note">{choiceReflection(choice)}</p>
                 </>
               )}
@@ -301,10 +282,9 @@ export default function LessonApp() {
                     <LongRun seq={seq} winAmount={potBeforeCall} lossAmount={L.turn.bet} />
                   </div>
                   <p className="lx-body">
-                    You lose {100 - have} of them and still finish ahead, because each win pays {money(potBeforeCall)}
-                    and each loss costs {money(L.turn.bet)}.
+                    Lose {100 - have}, still finish ahead: a win pays {money(potBeforeCall)}, a loss costs {money(L.turn.bet)}.
                   </p>
-                  <p className="lx-key">So losing this hand wouldn’t make calling wrong.</p>
+                  <p className="lx-key">Losing this hand wouldn’t make calling wrong.</p>
                 </>
               )}
 
@@ -330,7 +310,6 @@ export default function LessonApp() {
                     Real count: <b>{truth.wins} of {truth.unseen}</b>. Still about{' '}
                     <b className="t-win">{pct(truth.equity)} in 100</b>. Still enough.
                   </p>
-                  <p className="lx-note">You can only decide on what you can see. That’s the game.</p>
                 </>
               )}
 
@@ -368,13 +347,13 @@ export default function LessonApp() {
                     <span>{L.hero.short} <b>{L.proAction}</b></span>
                   </div>
                   <p className="lx-note">
-                    Farha called. The river missed the draw. What Moneymaker did next became the most famous bluff in poker.
+                    Farha called. The river missed. Next: the most famous bluff in poker.
                   </p>
                 </>
               )}
 
               {beatKey === 'tool' && (
-                <ToolBeat onRestart={restart} wins={hero.wins} unseen={hero.unseen} have={have} need={need} />
+                <ToolBeat onRestart={restart} onExit={onExit} onComplete={onComplete} wins={hero.wins} unseen={hero.unseen} have={have} need={need} />
               )}
             </section>
           )}
@@ -425,10 +404,10 @@ export default function LessonApp() {
 
 /* ── pieces ─────────────────────────────────────────────────── */
 
-function TopBar({ stage, beat, voiceOn, captionsOn, onVoice, onCaptions, onRestart }) {
+function TopBar({ stage, beat, voiceOn, captionsOn, onVoice, onCaptions, onRestart, embedded }) {
   return (
     <header className="lx-top">
-      <button type="button" className="lx-top__home" onClick={onRestart} aria-label="Start over">
+      <button type="button" className="lx-top__home" onClick={onRestart} aria-label={embedded ? 'Back to the path' : 'Start over'}>
         <span className="lx-top__mark">PD</span>
       </button>
       <div className="lx-top__mid">
@@ -610,13 +589,20 @@ function BreakIt({ bet, setBet, potBeforeBet, have, winShare, flipBet, villain }
         {call ? `Call. You win ${have} in 100 and pay ${need}.` : `Fold. Now you'd pay ${need} in 100 for a ${have} in 100 chance.`}
       </p>
       <p className="lx-note">
-        A bigger bet makes your slice of the pot bigger. Here, calling stops paying once he bets more than about {money(flipBet)}.
+        Calling stops paying once he bets more than about {money(flipBet)}.
       </p>
     </>
   );
 }
 
-function ToolBeat({ onRestart, wins, unseen, have, need }) {
+function ToolBeat({ onRestart, onExit, onComplete, wins, unseen, have, need }) {
+  const done = useRef(false);
+  useEffect(() => {
+    if (!done.current) {
+      done.current = true;
+      onComplete?.();
+    }
+  }, [onComplete]);
   useEffect(() => {
     try {
       const k = 'pd.v3.toolkit';
@@ -641,11 +627,15 @@ function ToolBeat({ onRestart, wins, unseen, have, need }) {
         </figcaption>
       </figure>
       <p className="lx-note">Saved to your toolkit. Every hand adds one.</p>
+      {/* One primary action. The river is a teaser, not a dead button. */}
+      <p className="lx-note">Next in this hand: the river, and the bluff. Coming soon.</p>
       <div className="lx-tool__actions">
-        <button type="button" className="lx-btn lx-btn--primary lx-btn--wide" disabled>
-          Next: the river · coming soon
-        </button>
-        <button type="button" className="lx-btn lx-btn--quiet lx-btn--wide" onClick={onRestart}>
+        {onExit && (
+          <button type="button" className="lx-btn lx-btn--primary lx-btn--wide" onClick={onExit}>
+            Back to the path
+          </button>
+        )}
+        <button type="button" className={`lx-btn ${onExit ? 'lx-btn--quiet' : 'lx-btn--primary'} lx-btn--wide`} onClick={onRestart}>
           Play the hand again
         </button>
       </div>

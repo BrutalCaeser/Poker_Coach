@@ -3,14 +3,16 @@ import { createRoot } from 'react-dom/client'
 
 /*
  * Two front doors while v3 is a prototype:
- *   /?v3   → the new lesson experience (its own design system; the old global
- *            stylesheet is never loaded, so nothing leaks into it)
+ *   /?v3       → the new game: learn the maths step by step, Moneymaker as the
+ *                boss (its own design system; the old global stylesheet is
+ *                never loaded, so nothing leaks into it)
+ *   /?v3&dev   → same, with every step unlocked for demos
  *   /      → the existing app, unchanged
  */
 const isV3 = new URLSearchParams(window.location.search).has('v3')
 
 const Root = isV3
-  ? lazy(() => import('./lesson/LessonApp.jsx'))
+  ? lazy(() => import('./game/GameApp.jsx'))
   : lazy(() => import('./styles.css').then(() => import('./App.jsx')))
 
 createRoot(document.getElementById('root')).render(

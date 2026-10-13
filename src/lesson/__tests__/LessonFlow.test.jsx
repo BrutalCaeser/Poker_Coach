@@ -96,7 +96,7 @@ describe('v3 lesson — the explanation', () => {
       await vi.advanceTimersByTimeAsync(3_000);
     });
     expect(screen.getByText('+1.59M')).toBeInTheDocument();
-    expect(screen.getByText(/lose 61 of them/i)).toBeInTheDocument();
+    expect(screen.getByText(/lose 61, still finish ahead/i)).toBeInTheDocument();
     next();
 
     // 5. Twist — his real cards, only now; the Q♠ was one of your outs
